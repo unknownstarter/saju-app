@@ -1,36 +1,54 @@
 import 'package:flutter/material.dart';
 
-/// 앱 테마 설정
+/// 앱 테마 설정 — "한지(韓紙)" 디자인 시스템
 ///
-/// 사주 기반 데이팅 앱에 맞는 따뜻하고 신비로운 컬러 팔레트를 사용합니다.
-/// - Primary: 자주색 계열 (신비로움, 운명)
-/// - Secondary: 코랄/핑크 계열 (따뜻함, 로맨스)
-/// - Tertiary: 골드 계열 (고급스러움, 동양적 느낌)
+/// 한국 전통 한지의 은은한 자연색을 기반으로 한 디자인 시스템.
+/// - Primary: 한지 하늘색 (은은한 청색)
+/// - Secondary: 한지 연분홍 (옅은 핑크)
+/// - Tertiary: 먹회색 (짙은 회색)
 ///
-/// 한국어 가독성을 위해 시스템 폰트(Apple SD Gothic Neo / Roboto)를 기본으로 사용하되,
-/// Pretendard 웹폰트를 assets에 추가하면 자동으로 적용되는 구조입니다.
+/// 듀얼 무드: 라이트(캐주얼) ↔ 다크(신비) 컨텍스트 기반 전환
 abstract final class AppTheme {
   // ===========================================================================
-  // 컬러 시스템
+  // 컬러 시스템 — 한지 팔레트
   // ===========================================================================
 
   // 브랜드 시드 컬러
-  static const _primarySeed = Color(0xFF6B3FA0); // 자주색 (신비/운명)
-  static const _secondarySeed = Color(0xFFE8617D); // 코랄 핑크 (로맨스)
-  static const _tertiarySeed = Color(0xFFD4A24E); // 골드 (동양적/프리미엄)
+  static const _primarySeed = Color(0xFFA8C8E8); // 한지 하늘색
+  static const _secondarySeed = Color(0xFFF2D0D5); // 한지 연분홍
+  static const _tertiarySeed = Color(0xFF4A4F54); // 먹회색
 
-  // 오행 컬러 (사주 UI에서 사용)
-  static const woodColor = Color(0xFF4CAF50); // 목(木) - 초록
-  static const fireColor = Color(0xFFEF5350); // 화(火) - 빨강
-  static const earthColor = Color(0xFFFFC107); // 토(土) - 황금
-  static const metalColor = Color(0xFFBDBDBD); // 금(金) - 은회색
-  static const waterColor = Color(0xFF42A5F5); // 수(水) - 파랑
+  // 한지 배경 컬러
+  static const _lightBackground = Color(0xFFF7F3EE); // 한지색
+  static const _lightSurface = Color(0xFFFEFCF9); // 밝은 한지
+  static const _lightElevated = Color(0xFFF0EDE8); // 어두운 한지
+  static const _darkBackground = Color(0xFF1D1E23); // 먹색
+  static const _darkSurface = Color(0xFF2A2B32); // 짙은 먹
+  static const _darkCard = Color(0xFF35363F); // 밝은 먹
 
-  // 궁합 점수 컬러
-  static const compatibilityExcellent = Color(0xFFE91E63); // 90-100: 천생연분
-  static const compatibilityGood = Color(0xFFFF7043); // 70-89: 좋은 인연
-  static const compatibilityNormal = Color(0xFFFFA726); // 50-69: 보통
-  static const compatibilityLow = Color(0xFF78909C); // 0-49: 노력 필요
+  // 오행 컬러 — 한지 톤 (비비드 금지)
+  static const woodColor = Color(0xFF8FB89A); // 목(木) - 수묵 초록
+  static const fireColor = Color(0xFFD4918E); // 화(火) - 연지 핑크
+  static const earthColor = Color(0xFFC8B68E); // 토(土) - 황토 한지
+  static const metalColor = Color(0xFFB8BCC0); // 금(金) - 먹탄 은회
+  static const waterColor = Color(0xFF89B0CB); // 수(水) - 쪽빛 하늘
+
+  // 오행 파스텔 (배경, 뱃지 등)
+  static const woodPastel = Color(0xFFD4E4D7);
+  static const firePastel = Color(0xFFF0D4D2);
+  static const earthPastel = Color(0xFFE8DFC8);
+  static const metalPastel = Color(0xFFE0E2E4);
+  static const waterPastel = Color(0xFFC8DBEA);
+
+  // 궁합 점수 컬러 — 한지 톤
+  static const compatibilityExcellent = Color(0xFFC27A88); // 90-100: 연지색
+  static const compatibilityGood = Color(0xFFC49A7C); // 70-89: 황토 살구
+  static const compatibilityNormal = Color(0xFFA8B0A0); // 50-69: 회녹색
+  static const compatibilityLow = Color(0xFF959EA2); // 0-49: 구색
+
+  // 신비 모드 전용
+  static const mysticGlow = Color(0xFFC8B68E); // 은은한 골드 글로우
+  static const mysticAccent = Color(0xFFD4C9A8); // 밝은 황토
 
   /// 궁합 점수에 따른 컬러 반환
   static Color compatibilityColor(int score) {
@@ -40,8 +58,53 @@ abstract final class AppTheme {
     return compatibilityLow;
   }
 
+  /// 오행 타입에 따른 메인 컬러 반환
+  static Color fiveElementColor(String element) {
+    return switch (element) {
+      '목' || '木' || 'wood' => woodColor,
+      '화' || '火' || 'fire' => fireColor,
+      '토' || '土' || 'earth' => earthColor,
+      '금' || '金' || 'metal' => metalColor,
+      '수' || '水' || 'water' => waterColor,
+      _ => metalColor,
+    };
+  }
+
+  /// 오행 타입에 따른 파스텔 컬러 반환
+  static Color fiveElementPastel(String element) {
+    return switch (element) {
+      '목' || '木' || 'wood' => woodPastel,
+      '화' || '火' || 'fire' => firePastel,
+      '토' || '土' || 'earth' => earthPastel,
+      '금' || '金' || 'metal' => metalPastel,
+      '수' || '水' || 'water' => waterPastel,
+      _ => metalPastel,
+    };
+  }
+
   // ===========================================================================
-  // 라이트 테마
+  // 스페이싱 시스템 (4px 기반)
+  // ===========================================================================
+
+  static const spacingXs = 4.0;
+  static const spacingSm = 8.0;
+  static const spacingMd = 16.0;
+  static const spacingLg = 24.0;
+  static const spacingXl = 32.0;
+  static const spacingXxl = 48.0;
+
+  // ===========================================================================
+  // Border Radius
+  // ===========================================================================
+
+  static const radiusSm = 8.0;
+  static const radiusMd = 12.0;
+  static const radiusLg = 16.0;
+  static const radiusXl = 20.0;
+  static const radiusFull = 999.0;
+
+  // ===========================================================================
+  // 라이트 테마 (기본 — 캐주얼 모드)
   // ===========================================================================
 
   static final light = ThemeData(
@@ -54,12 +117,13 @@ abstract final class AppTheme {
       secondary: _secondarySeed,
       tertiary: _tertiarySeed,
       brightness: Brightness.light,
-      // 배경을 따뜻한 크림톤으로
-      surface: const Color(0xFFFFF8F2),
+      surface: _lightSurface,
     ),
 
+    // --- 스캐폴드 배경 ---
+    scaffoldBackgroundColor: _lightBackground,
+
     // --- 타이포그래피 ---
-    // TODO: Pretendard 폰트 추가 시 fontFamily를 'Pretendard'로 변경
     textTheme: _buildTextTheme(Brightness.light),
 
     // --- AppBar ---
@@ -72,10 +136,10 @@ abstract final class AppTheme {
     ),
 
     // --- Card ---
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
       ),
       clipBehavior: Clip.antiAlias,
       color: Colors.white,
@@ -87,7 +151,7 @@ abstract final class AppTheme {
       style: FilledButton.styleFrom(
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(radiusMd + 2),
         ),
         textStyle: const TextStyle(
           fontSize: 16,
@@ -102,9 +166,9 @@ abstract final class AppTheme {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(radiusMd + 2),
         ),
-        side: BorderSide(color: _primarySeed.withValues(alpha: 0.3)),
+        side: BorderSide(color: _primarySeed.withValues(alpha: 0.4)),
         textStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -126,30 +190,30 @@ abstract final class AppTheme {
     // --- InputDecoration ---
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFFF5F5F5),
+      fillColor: _lightElevated,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         borderSide: BorderSide(color: _primarySeed, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: BorderSide(color: fireColor.withValues(alpha: 0.6), width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: BorderSide(color: fireColor.withValues(alpha: 0.8), width: 1.5),
       ),
-      hintStyle: TextStyle(
-        color: Colors.grey.shade400,
+      hintStyle: const TextStyle(
+        color: Color(0xFFA0A0A0),
         fontSize: 15,
       ),
     ),
@@ -157,7 +221,7 @@ abstract final class AppTheme {
     // --- Chip ---
     chipTheme: ChipThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radiusFull),
       ),
       side: BorderSide.none,
       labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
@@ -167,35 +231,36 @@ abstract final class AppTheme {
     navigationBarTheme: NavigationBarThemeData(
       elevation: 0,
       height: 64,
-      indicatorColor: _primarySeed.withValues(alpha: 0.12),
+      indicatorColor: _primarySeed.withValues(alpha: 0.15),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return TextStyle(
+          return const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: _primarySeed,
+            color: Color(0xFF4A4F54),
           );
         }
         return const TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
-          color: Colors.grey,
+          color: Color(0xFFA0A0A0),
         );
       }),
     ),
 
     // --- BottomSheet ---
-    bottomSheetTheme: const BottomSheetThemeData(
-      shape: RoundedRectangleBorder(
+    bottomSheetTheme: BottomSheetThemeData(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       showDragHandle: true,
+      backgroundColor: _lightSurface,
     ),
 
     // --- Dialog ---
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radiusXl),
       ),
     ),
 
@@ -203,7 +268,7 @@ abstract final class AppTheme {
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
       ),
     ),
 
@@ -211,11 +276,12 @@ abstract final class AppTheme {
     dividerTheme: const DividerThemeData(
       thickness: 0.5,
       space: 0,
+      color: Color(0xFFE8E4DF),
     ),
   );
 
   // ===========================================================================
-  // 다크 테마
+  // 다크 테마 (신비 모드 — 사주 분석, 궁합 결과)
   // ===========================================================================
 
   static final dark = ThemeData(
@@ -228,8 +294,11 @@ abstract final class AppTheme {
       secondary: _secondarySeed,
       tertiary: _tertiarySeed,
       brightness: Brightness.dark,
-      surface: const Color(0xFF1A1A2E),
+      surface: _darkSurface,
     ),
+
+    // --- 스캐폴드 배경 ---
+    scaffoldBackgroundColor: _darkBackground,
 
     // --- 타이포그래피 ---
     textTheme: _buildTextTheme(Brightness.dark),
@@ -244,13 +313,13 @@ abstract final class AppTheme {
     ),
 
     // --- Card ---
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
       ),
       clipBehavior: Clip.antiAlias,
-      color: const Color(0xFF252540),
+      color: _darkCard,
       surfaceTintColor: Colors.transparent,
     ),
 
@@ -259,7 +328,7 @@ abstract final class AppTheme {
       style: FilledButton.styleFrom(
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(radiusMd + 2),
         ),
         textStyle: const TextStyle(
           fontSize: 16,
@@ -274,7 +343,7 @@ abstract final class AppTheme {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(radiusMd + 2),
         ),
         textStyle: const TextStyle(
           fontSize: 16,
@@ -287,25 +356,25 @@ abstract final class AppTheme {
     // --- InputDecoration ---
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF2A2A40),
+      fillColor: _darkCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         borderSide: BorderSide(
-          color: _primarySeed.withValues(alpha: 0.8),
+          color: _primarySeed.withValues(alpha: 0.6),
           width: 1.5,
         ),
       ),
-      hintStyle: TextStyle(
-        color: Colors.grey.shade600,
+      hintStyle: const TextStyle(
+        color: Color(0xFF6B6B6B),
         fontSize: 15,
       ),
     ),
@@ -313,7 +382,7 @@ abstract final class AppTheme {
     // --- Chip ---
     chipTheme: ChipThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radiusFull),
       ),
       side: BorderSide.none,
       labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
@@ -326,17 +395,18 @@ abstract final class AppTheme {
     ),
 
     // --- BottomSheet ---
-    bottomSheetTheme: const BottomSheetThemeData(
-      shape: RoundedRectangleBorder(
+    bottomSheetTheme: BottomSheetThemeData(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       showDragHandle: true,
+      backgroundColor: _darkSurface,
     ),
 
     // --- Dialog ---
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radiusXl),
       ),
     ),
 
@@ -344,7 +414,7 @@ abstract final class AppTheme {
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
       ),
     ),
 
@@ -352,6 +422,7 @@ abstract final class AppTheme {
     dividerTheme: const DividerThemeData(
       thickness: 0.5,
       space: 0,
+      color: Color(0xFF35363F),
     ),
   );
 
@@ -366,8 +437,13 @@ abstract final class AppTheme {
   /// - 제목은 weight를 w700 대신 w600으로 (가독성)
   /// - 본문 lineHeight는 1.5 이상 확보
   static TextTheme _buildTextTheme(Brightness brightness) {
-    final baseColor =
-        brightness == Brightness.light ? Colors.black87 : Colors.white;
+    final baseColor = brightness == Brightness.light
+        ? const Color(0xFF2D2D2D) // 짙은 먹 (순수 검정 대신)
+        : const Color(0xFFE8E4DF); // 한지 백색
+
+    final secondaryColor = brightness == Brightness.light
+        ? const Color(0xFF6B6B6B) // 연한 먹
+        : const Color(0xFFA09B94); // 한지 회
 
     return TextTheme(
       // 대형 타이틀 (사주 결과, 매칭 점수 등)
@@ -459,7 +535,7 @@ abstract final class AppTheme {
         fontWeight: FontWeight.w400,
         letterSpacing: 0,
         height: 1.5,
-        color: baseColor.withValues(alpha: 0.7),
+        color: secondaryColor,
       ),
 
       // 라벨, 캡션
@@ -482,7 +558,7 @@ abstract final class AppTheme {
         fontWeight: FontWeight.w500,
         letterSpacing: 0,
         height: 1.4,
-        color: baseColor.withValues(alpha: 0.6),
+        color: secondaryColor,
       ),
     );
   }
