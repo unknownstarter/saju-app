@@ -25,7 +25,7 @@ abstract final class RoutePaths {
   // --- 서브 페이지 ---
   static const sajuAnalysis = '/saju-analysis';
   static const sajuResult = '/saju-result';
-  static const matchDetail = '/match/:matchId';
+  static const matchDetail = '/matching/:matchId';
   static const chatRoom = '/chat/:roomId';
   static const settings = '/settings';
   static const editProfile = '/profile/edit';
@@ -33,7 +33,7 @@ abstract final class RoutePaths {
   static const paymentSuccess = '/payment/success';
 
   /// matchDetail 경로에 실제 ID를 삽입
-  static String matchDetailPath(String matchId) => '/match/$matchId';
+  static String matchDetailPath(String matchId) => '/matching/$matchId';
 
   /// chatRoom 경로에 실제 ID를 삽입
   static String chatRoomPath(String roomId) => '/chat/$roomId';

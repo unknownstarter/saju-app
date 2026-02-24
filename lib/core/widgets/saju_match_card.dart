@@ -108,8 +108,8 @@ class SajuMatchCard extends StatelessWidget {
         child: characterAssetPath != null
             ? Image.asset(
                 characterAssetPath!,
-                width: 56,
-                height: 56,
+                width: 72,
+                height: 72,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) =>
                     _buildPlaceholderIcon(elementColor),

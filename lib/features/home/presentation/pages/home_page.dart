@@ -30,25 +30,40 @@ class HomePage extends ConsumerWidget {
             children: [
               const SizedBox(height: 20),
 
-              // ---- 1. 인사 ----
+              // ---- 1. 인사 + 캐릭터 ----
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '오늘의 인연을\n만나봐요',
-                      style: textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        height: 1.3,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '오늘의 인연을\n만나봐요',
+                            style: textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '사주가 이끄는 운명적 만남',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: textTheme.bodySmall?.color,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '사주가 이끄는 운명적 만남',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: textTheme.bodySmall?.color,
-                      ),
+                    // 나무리 캐릭터 — 은은하게
+                    Image.asset(
+                      'assets/images/characters/namuri_wood_default.png',
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
                     ),
                   ],
                 ),
@@ -295,8 +310,8 @@ class _FortuneCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppTheme.waterPastel.withValues(alpha: 0.5),
@@ -305,8 +320,8 @@ class _FortuneCard extends StatelessWidget {
                   child: characterAssetPath != null
                       ? Image.asset(
                           characterAssetPath!,
-                          width: 24,
-                          height: 24,
+                          width: 28,
+                          height: 28,
                           errorBuilder: (_, _, _) => Text(
                             '물',
                             style: TextStyle(
@@ -348,7 +363,7 @@ class _FortuneCard extends StatelessWidget {
     );
   }
 
-  String? get characterAssetPath => 'assets/images/characters/water_happy.png';
+  String? get characterAssetPath => 'assets/images/characters/mulgyeori_water_default.png';
 }
 
 // =============================================================================

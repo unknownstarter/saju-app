@@ -133,7 +133,7 @@ class CompatibilityPreviewPage extends ConsumerWidget {
           label: '나',
           color: AppTheme.woodColor,
           pastelColor: AppTheme.woodPastel,
-          assetPath: 'assets/images/characters/wood_happy.png',
+          assetPath: 'assets/images/characters/namuri_wood_default.png',
           characterName: '나무리',
         ),
         const SizedBox(width: 24),
