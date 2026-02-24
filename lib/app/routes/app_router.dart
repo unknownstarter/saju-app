@@ -7,6 +7,8 @@ import '../../core/constants/app_constants.dart';
 import '../../core/network/supabase_client.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/matching/presentation/pages/matching_page.dart';
 import '../../features/saju/presentation/pages/saju_analysis_page.dart';
 import '../../features/saju/presentation/pages/saju_result_page.dart';
 import '../../features/saju/presentation/providers/saju_provider.dart';
@@ -121,7 +123,7 @@ GoRouter appRouter(Ref ref) {
                 path: RoutePaths.home,
                 name: RouteNames.home,
                 builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Home'),
+                    const HomePage(),
               ),
             ],
           ),
@@ -133,7 +135,7 @@ GoRouter appRouter(Ref ref) {
                 path: RoutePaths.matching,
                 name: RouteNames.matching,
                 builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Matching'),
+                    const MatchingPage(),
                 routes: [
                   // 매칭 상세
                   GoRoute(
