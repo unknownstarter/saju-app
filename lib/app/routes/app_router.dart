@@ -13,6 +13,7 @@ import '../../features/matching/presentation/pages/matching_page.dart';
 import '../../features/chat/presentation/pages/chat_list_page.dart';
 import '../../features/chat/presentation/pages/chat_room_page.dart';
 import '../../features/profile/presentation/pages/matching_profile_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/saju/presentation/pages/saju_analysis_page.dart';
 import '../../features/saju/presentation/pages/saju_result_page.dart';
 import '../../features/saju/presentation/providers/saju_provider.dart';
@@ -188,8 +189,7 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
-                builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Profile'),
+                builder: (context, state) => const ProfilePage(),
               ),
             ],
           ),

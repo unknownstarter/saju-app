@@ -59,7 +59,7 @@
 |------|------|------|
 | **Frontend** | Flutter 3.38+ | iOS, Android, Web |
 | **Backend** | Supabase | PostgreSQL + Edge Functions + Auth + Storage + Realtime |
-| **사주 엔진** | manseryeok-js 기반 | 한국천문연구원(KASI) 데이터, 만세력 계산 |
+| **사주 엔진** | @fullstackfamily/manseryeok (Edge Function) | 한국천문연구원(KASI) 데이터 기반 만세력, 절기·음력·진태양시 보정 |
 | **AI** | Claude API | 사주 해석, 개인화 인사이트, 궁합 스토리텔링 |
 | **인증** | Supabase Auth | Apple, Google, Kakao 소셜 로그인 + SMS 인증 |
 | **결제** | RevenueCat | iOS App Store + Google Play 인앱 결제 통합 |
@@ -173,6 +173,13 @@ feature/
 - 브랜치: `feature/`, `fix/`, `experiment/`, `research/`
 - 커밋: Conventional Commits (한국어 본문 가능)
 - PR 리뷰 필수
+
+### 연속 작업 / 다음 할 일 (2026-02-24 추가)
+- **다른 디바이스에서 이어서 작업할 때**: 먼저 **테스크 마스터**를 확인할 것.
+- **테스크 마스터**: `docs/plans/2026-02-24-task-master.md` — 다음에 할 일, 우선순위, 담당 관점, 참조 문서.
+- **PRD 백로그**: `docs/plans/2026-02-24-app-design.md` §12 — 요약 및 테스크 마스터 링크.
+- **완료·레슨런**: `docs/dev-log/2026-02-24-progress.md` — 오늘 완료 내역, 오늘의 교훈(Lessons Learned).
+- 작업 완료 시 테스크 마스터 상태(⬜→✅) 및 필요 시 dev-log 업데이트.
 
 ---
 

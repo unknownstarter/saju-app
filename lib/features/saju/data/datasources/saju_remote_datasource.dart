@@ -9,6 +9,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/supabase_client.dart';
 import '../models/saju_profile_model.dart';
 
+// Supabase 테이블명
+const _sajuProfilesTable = SupabaseTables.sajuProfiles;
+
 // =============================================================================
 // 사주 Remote 데이터소스
 // =============================================================================
@@ -61,6 +64,43 @@ class SajuRemoteDatasource {
     return SajuProfileModel.fromJson(
       Map<String, dynamic>.from(response as Map),
     );
+  }
+
+  /// 사주 프로필 조회 (by user_id) — 궁합 계산용
+  ///
+  /// [userId]: profiles.id (또는 auth user id와 매핑되는 프로필 id)
+  /// 반환: 저장된 사주가 있으면 [SajuProfileModel], 없으면 null.
+  /// RLS: 본인 또는 daily_matches 추천 대상의 사주만 조회 가능.
+  Future<SajuProfileModel?> getSajuProfileByUserId(String userId) async {
+    final row = await _helper.getSingleBy(
+      _sajuProfilesTable,
+      'user_id',
+      userId,
+    );
+    if (row == null) return null;
+
+    final yearPillar = row['year_pillar'];
+    final monthPillar = row['month_pillar'];
+    final dayPillar = row['day_pillar'];
+    final hourPillar = row['hour_pillar'];
+    final fiveElements = row['five_elements'];
+    final dominantElement = row['dominant_element'];
+    if (yearPillar == null || monthPillar == null || dayPillar == null ||
+        fiveElements == null || dominantElement == null) {
+      return null;
+    }
+
+    return SajuProfileModel.fromJson({
+      'yearPillar': yearPillar,
+      'monthPillar': monthPillar,
+      'dayPillar': dayPillar,
+      'hourPillar': hourPillar,
+      'fiveElements': fiveElements,
+      'dominantElement': dominantElement,
+      'birthDate': '2000-01-01',
+      'birthTime': null,
+      'isLunar': row['is_lunar_calendar'] == true,
+    });
   }
 
   /// AI 사주 인사이트 생성

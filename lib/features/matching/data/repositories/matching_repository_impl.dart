@@ -1,14 +1,18 @@
-/// 매칭 Repository Mock 구현체
+/// 매칭 Repository 구현체
 ///
-/// Supabase 연동 전까지 사용되는 Mock 데이터 기반 구현입니다.
-/// 실제 서비스에서는 [MatchingRepositoryImpl]로 교체됩니다.
+/// - [MatchingRepositoryImpl]: 실궁합 Edge Function 연동 + 추천/좋아요는 Mock
+/// - [MockMatchingRepository]: 전부 Mock (테스트/개발용)
 library;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/domain/entities/compatibility_entity.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/network/supabase_client.dart';
 import '../../domain/entities/like_entity.dart';
 import '../../domain/entities/match_profile.dart';
 import '../../domain/repositories/matching_repository.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../../saju/domain/repositories/saju_repository.dart';
 
 // =============================================================================
 // Mock 매칭 프로필 데이터
@@ -165,6 +169,111 @@ const _mockChallenges = <String, List<String>>{
     '변화를 두려워해 관계가 정체될 수 있어요',
   ],
 };
+
+// =============================================================================
+// 실구현 (Phase 1: 실궁합 연동)
+// =============================================================================
+
+/// 매칭 Repository 실구현
+///
+/// 궁합 프리뷰만 [calculate-compatibility] Edge Function으로 계산하고,
+/// 추천/좋아요는 Phase 1에서 Mock 유지.
+class MatchingRepositoryImpl implements MatchingRepository {
+  const MatchingRepositoryImpl({
+    required AuthRepository authRepository,
+    required SajuRepository sajuRepository,
+    required SupabaseHelper supabaseHelper,
+  })  : _authRepository = authRepository,
+        _sajuRepository = sajuRepository,
+        _supabaseHelper = supabaseHelper;
+
+  final AuthRepository _authRepository;
+  final SajuRepository _sajuRepository;
+  final SupabaseHelper _supabaseHelper;
+
+  @override
+  Future<List<MatchProfile>> getDailyRecommendations() async {
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    return _mockProfiles;
+  }
+
+  @override
+  Future<Compatibility> getCompatibilityPreview(String partnerId) async {
+    final myProfile = await _authRepository.getCurrentUserProfile();
+    if (myProfile == null) {
+      throw Exception(MatchingFailure.sajuRequired().message);
+    }
+    final mySaju = await _sajuRepository.getSajuForCompatibility(myProfile.id);
+    final partnerSaju = await _sajuRepository.getSajuForCompatibility(partnerId);
+    if (mySaju == null || partnerSaju == null) {
+      throw Exception(MatchingFailure.sajuRequired().message);
+    }
+
+    final body = <String, dynamic>{
+      'mySaju': mySaju,
+      'partnerSaju': partnerSaju,
+    };
+    final response = await _supabaseHelper.invokeFunction(
+      SupabaseFunctions.calculateCompatibility,
+      body: body,
+    );
+    if (response == null || response is! Map<String, dynamic>) {
+      throw Exception('궁합 계산 결과가 비어있습니다.');
+    }
+
+    final map = Map<String, dynamic>.from(response);
+    final calculatedAt = DateTime.tryParse(
+      map['calculatedAt'] as String? ?? '',
+    ) ?? DateTime.now();
+    return Compatibility(
+      id: 'compat-$partnerId-${calculatedAt.millisecondsSinceEpoch}',
+      userId: myProfile.id,
+      partnerId: partnerId,
+      score: (map['score'] as num?)?.toInt() ?? 0,
+      fiveElementScore: (map['fiveElementScore'] as num?)?.toInt(),
+      dayPillarScore: (map['dayPillarScore'] as num?)?.toInt(),
+      overallAnalysis: map['overallAnalysis'] as String?,
+      strengths: List<String>.from(map['strengths'] ?? []),
+      challenges: List<String>.from(map['challenges'] ?? []),
+      advice: map['advice'] as String?,
+      aiStory: map['aiStory'] as String?,
+      calculatedAt: calculatedAt,
+    );
+  }
+
+  @override
+  Future<void> sendLike(String receiverId, {bool isPremium = false}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
+  Future<void> acceptLike(String likeId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
+  Future<List<Like>> getReceivedLikes() async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    return [
+      Like(
+        id: 'like-001',
+        senderId: 'mock-user-001',
+        receiverId: 'current-user',
+        isPremium: true,
+        status: LikeStatus.pending,
+        sentAt: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      Like(
+        id: 'like-002',
+        senderId: 'mock-user-002',
+        receiverId: 'current-user',
+        isPremium: false,
+        status: LikeStatus.pending,
+        sentAt: DateTime.now().subtract(const Duration(hours: 5)),
+      ),
+    ];
+  }
+}
 
 // =============================================================================
 // Mock Repository 구현

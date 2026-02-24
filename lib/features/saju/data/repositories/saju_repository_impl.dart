@@ -59,4 +59,10 @@ class SajuRepositoryImpl implements SajuRepository {
       aiInterpretation: insightModel.interpretation,
     );
   }
+
+  @override
+  Future<Map<String, dynamic>?> getSajuForCompatibility(String userId) async {
+    final model = await _datasource.getSajuProfileByUserId(userId);
+    return model?.toJson();
+  }
 }

@@ -1,0 +1,347 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/domain/entities/user_entity.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/widgets.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+
+/// 프로필 탭 — 내 프로필 보기
+///
+/// 하단 네비게이션 "프로필" 탭에서 진입.
+/// 현재 사용자 정보, 완성도, 프로필 편집/설정/로그아웃 액션을 제공합니다.
+class ProfilePage extends ConsumerWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(currentUserProfileProvider);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      body: SafeArea(
+        child: userAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          error: (_, __) => SajuErrorState(
+            message: '프로필을 불러오지 못했어요',
+            onRetry: () => ref.invalidate(currentUserProfileProvider),
+          ),
+          data: (user) {
+            if (user == null) {
+              return Center(
+                child: Text(
+                  '로그인이 필요해요',
+                  style: textTheme.bodyLarge,
+                ),
+              );
+            }
+            return _ProfileContent(user: user);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent({required this.user});
+
+  final UserEntity user;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppTheme.spacingLg),
+
+          // ---- 1. 프로필 헤더 (아바타 + 이름, 나이 + 내 캐릭터) ----
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                SajuAvatar(
+                  name: user.name,
+                  imageUrl: user.primaryPhotoUrl,
+                  size: SajuSize.xl,
+                ),
+                const SizedBox(width: AppTheme.spacingMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.name,
+                        style: textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingXs),
+                      Text(
+                        '${user.age}세 · ${user.gender.label}',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondaryDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // 내 캐릭터 (오행 배정 전에는 기본 나무리)
+                Image.asset(
+                  CharacterAssets.namuriWoodDefault,
+                  width: 72,
+                  height: 72,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacingXl),
+
+          // ---- 2. 프로필 완성도 ----
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _CompletionSection(percent: user.completionPercent),
+          ),
+
+          const SizedBox(height: AppTheme.spacingMd),
+
+          // ---- 3. 한 줄 정보 (지역, 직업, MBTI) ----
+          if (user.location != null ||
+              user.occupation != null ||
+              user.mbti != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  if (user.location != null)
+                    SajuChip(
+                      label: user.location!,
+                      size: SajuSize.sm,
+                    ),
+                  if (user.occupation != null)
+                    SajuChip(
+                      label: user.occupation!,
+                      size: SajuSize.sm,
+                    ),
+                  if (user.mbti != null)
+                    SajuChip(
+                      label: user.mbti!,
+                      size: SajuSize.sm,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingLg),
+          ],
+
+          // ---- 4. 사주 분석 상태 ----
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SajuCard(
+              content: Row(
+                children: [
+                  Icon(
+                    user.hasSajuProfile
+                        ? Icons.check_circle_outline
+                        : Icons.schedule_outlined,
+                    size: 20,
+                    color: user.hasSajuProfile
+                        ? AppTheme.woodColor
+                        : AppTheme.textHint,
+                  ),
+                  const SizedBox(width: AppTheme.spacingSm),
+                  Text(
+                    user.hasSajuProfile
+                        ? '사주 분석 완료'
+                        : '사주 분석을 완료하면 궁합 추천을 받을 수 있어요',
+                    style: textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+              variant: SajuVariant.flat,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingMd,
+                vertical: AppTheme.spacingSm,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacingXl),
+
+          // ---- 5. 메뉴 (편집, 설정, 결제) ----
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                _MenuTile(
+                  icon: Icons.edit_outlined,
+                  label: '프로필 편집',
+                  onTap: () => context.push(RoutePaths.editProfile),
+                ),
+                _MenuTile(
+                  icon: Icons.settings_outlined,
+                  label: '설정',
+                  onTap: () => context.push(RoutePaths.settings),
+                ),
+                _MenuTile(
+                  icon: Icons.card_giftcard_outlined,
+                  label: '결제·구독',
+                  onTap: () => context.push(RoutePaths.payment),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacingXl),
+
+          // ---- 6. 로그아웃 ----
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _LogoutButton(),
+          ),
+
+          const SizedBox(height: AppTheme.spacingXl),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompletionSection extends StatelessWidget {
+  const _CompletionSection({required this.percent});
+
+  final int percent;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '프로필 완성도',
+              style: textTheme.titleSmall?.copyWith(
+                color: AppTheme.textSecondaryDark,
+              ),
+            ),
+            Text(
+              '$percent%',
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+          child: LinearProgressIndicator(
+            value: percent / 100,
+            minHeight: 6,
+            backgroundColor: AppTheme.hanjiElevated,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              AppTheme.woodColor.withValues(alpha: 0.9),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuTile extends StatelessWidget {
+  const _MenuTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppTheme.spacingMd,
+          horizontal: AppTheme.spacingSm,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: AppTheme.textSecondaryDark),
+            const SizedBox(width: AppTheme.spacingMd),
+            Text(
+              label,
+              style: textTheme.bodyLarge,
+            ),
+            const Spacer(),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: AppTheme.textHint,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoutButton extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return OutlinedButton(
+      onPressed: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('로그아웃'),
+            content: const Text('로그아웃 할까요?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('로그아웃'),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true && context.mounted) {
+          await ref.read(authNotifierProvider.notifier).signOut();
+          if (context.mounted) {
+            context.go(RoutePaths.login);
+          }
+        }
+      },
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppTheme.textSecondaryDark,
+      ),
+      child: const Text('로그아웃'),
+    );
+  }
+}

@@ -47,4 +47,10 @@ abstract class SajuRepository {
     bool isLunar = false,
     String? userName,
   });
+
+  /// 궁합 계산용 사주 payload 조회 (DB 저장분)
+  ///
+  /// [userId]: profiles.id (현재 사용자 또는 상대방)
+  /// 반환: 해당 사용자의 saju_profiles가 있으면 Edge Function 요청용 맵(mySaju/partnerSaju 한 명분), 없으면 null.
+  Future<Map<String, dynamic>?> getSajuForCompatibility(String userId);
 }

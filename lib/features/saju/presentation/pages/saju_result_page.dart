@@ -13,6 +13,7 @@ import '../widgets/pillar_card.dart';
 /// SajuResultPage -- 사주 분석 결과 화면
 ///
 /// 라이트 모드(한지 배경)에서 사주 프로필 결과를 보여준다.
+/// 진입 시 스태거드 페이드인으로 "결과가 공개되는" 와우 모먼트 연출.
 ///
 /// 레이아웃:
 /// 1. 배정 캐릭터 + 이름/오행 뱃지
@@ -33,8 +34,8 @@ class SajuResultPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 결과 데이터: extra로 전달받은 것 우선, 없으면 provider에서 읽기
-    final analysisResult = result ?? ref.watch(sajuAnalysisNotifierProvider).valueOrNull;
+    final analysisResult =
+        result ?? ref.watch(sajuAnalysisNotifierProvider).valueOrNull;
 
     if (analysisResult == null) {
       return _buildNoDataState(context);
@@ -52,10 +53,9 @@ class SajuResultPage extends ConsumerWidget {
     return Theme(
       data: AppTheme.light,
       child: Scaffold(
-        backgroundColor: AppTheme.hanjiBg, // 한지색
+        backgroundColor: AppTheme.hanjiBg,
         body: CustomScrollView(
           slivers: [
-            // AppBar
             SliverAppBar(
               expandedHeight: 0,
               floating: true,
@@ -72,87 +72,44 @@ class SajuResultPage extends ConsumerWidget {
                 ),
               ],
             ),
-
-            // 콘텐츠
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppTheme.spacingLg,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // =================================================
-                    // 1. 헤더: 캐릭터 + 이름 + 오행 뱃지
-                    // =================================================
-                    _buildHeader(
+                child: _ResultRevealContent(
+                  sections: [
+                    () => _buildHeader(
                       context,
                       analysisResult,
                       elementColor,
                       elementColorValue,
                       elementPastelValue,
                     ),
-
-                    const SizedBox(height: AppTheme.spacingLg),
-
-                    // =================================================
-                    // 2. 캐릭터 인사 말풍선
-                    // =================================================
-                    SajuCharacterBubble(
+                    () => SajuCharacterBubble(
                       characterName: analysisResult.characterName,
                       message: analysisResult.characterGreeting,
                       elementColor: elementColor,
                       characterAssetPath: analysisResult.characterAssetPath,
                       size: SajuSize.md,
                     ),
-
-                    const SizedBox(height: AppTheme.spacingXl),
-
-                    // =================================================
-                    // 3. 사주 4기둥 카드
-                    // =================================================
-                    _buildPillarsSection(context, profile),
-
-                    const SizedBox(height: AppTheme.spacingXl),
-
-                    // =================================================
-                    // 4. 오행 분포 차트
-                    // =================================================
-                    _buildFiveElementsSection(context, profile),
-
-                    const SizedBox(height: AppTheme.spacingXl),
-
-                    // =================================================
-                    // 5. 성격 특성 칩
-                    // =================================================
+                    () => _buildPillarsSection(context, profile),
+                    () => _buildFiveElementsSection(context, profile),
                     if (profile.personalityTraits.isNotEmpty)
-                      _buildPersonalitySection(context, profile, elementColor),
-
-                    if (profile.personalityTraits.isNotEmpty)
-                      const SizedBox(height: AppTheme.spacingXl),
-
-                    // =================================================
-                    // 6. AI 해석 카드
-                    // =================================================
+                      () => _buildPersonalitySection(
+                        context,
+                        profile,
+                        elementColor,
+                      ),
                     if (profile.aiInterpretation != null &&
                         profile.aiInterpretation!.isNotEmpty)
-                      _buildAiInterpretationSection(
+                      () => _buildAiInterpretationSection(
                         context,
                         profile,
                         elementColor,
                         elementColorValue,
                       ),
-
-                    if (profile.aiInterpretation != null &&
-                        profile.aiInterpretation!.isNotEmpty)
-                      const SizedBox(height: AppTheme.spacingXl),
-
-                    // =================================================
-                    // 7. 액션 버튼
-                    // =================================================
-                    _buildActions(context, elementColor),
-
-                    const SizedBox(height: AppTheme.spacingXxl),
+                    () => _buildActions(context, elementColor),
                   ],
                 ),
               ),
@@ -506,5 +463,75 @@ class SajuResultPage extends ConsumerWidget {
       FiveElementType.water => SajuColor.water,
       null => SajuColor.metal,
     };
+  }
+}
+
+// =============================================================================
+// 스태거드 리빌 컨테이너 (와우 모먼트)
+// =============================================================================
+
+class _ResultRevealContent extends StatefulWidget {
+  const _ResultRevealContent({required this.sections});
+
+  final List<Widget Function()> sections;
+
+  @override
+  State<_ResultRevealContent> createState() => _ResultRevealContentState();
+}
+
+class _ResultRevealContentState extends State<_ResultRevealContent>
+    with SingleTickerProviderStateMixin {
+  static const _duration = Duration(milliseconds: 1400);
+  static const _stagger = 0.14;
+
+  late final AnimationController _controller;
+  late final List<Animation<double>> _fades;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: _duration);
+    _fades = List.generate(
+      widget.sections.length,
+      (i) {
+        final start = (i * _stagger).clamp(0.0, 0.85);
+        final end = (start + 0.35).clamp(0.0, 1.0);
+        return Tween<double>(begin: 0, end: 1).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(start, end, curve: Curves.easeOutCubic),
+          ),
+        );
+      },
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (var i = 0; i < widget.sections.length; i++) ...[
+          FadeTransition(
+            opacity: _fades[i],
+            child: widget.sections[i](),
+          ),
+          if (i < widget.sections.length - 1)
+            SizedBox(
+              height: i == 0
+                  ? AppTheme.spacingLg
+                  : (i == 1 ? AppTheme.spacingXl : AppTheme.spacingXl),
+            ),
+        ],
+        const SizedBox(height: AppTheme.spacingXxl),
+      ],
+    );
   }
 }

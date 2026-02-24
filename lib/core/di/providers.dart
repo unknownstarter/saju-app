@@ -71,11 +71,15 @@ SajuRepository sajuRepository(Ref ref) {
 
 /// 매칭 Repository Provider
 ///
-/// 현재는 Mock 구현체를 반환합니다.
-/// Supabase 연동 후 실제 구현체로 교체합니다.
+/// Phase 1: 실궁합(calculate-compatibility) 연동 구현체 사용.
+/// 추천/좋아요는 Mock 유지. 테스트 시 Mock으로 교체 가능.
 @riverpod
 MatchingRepository matchingRepository(Ref ref) {
-  return MockMatchingRepository();
+  return MatchingRepositoryImpl(
+    authRepository: ref.watch(authRepositoryProvider),
+    sajuRepository: ref.watch(sajuRepositoryProvider),
+    supabaseHelper: ref.watch(supabaseHelperProvider),
+  );
 }
 
 // =============================================================================

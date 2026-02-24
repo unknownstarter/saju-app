@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/match_profile.dart';
@@ -66,7 +67,7 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
                 loading: () => const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                error: (_, _) => _buildErrorState(textTheme),
+                error: (_, _) => _buildErrorState(),
                 data: (profiles) {
                   final filtered = _selectedFilter == null
                       ? profiles
@@ -114,13 +115,11 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
     TextTheme textTheme,
   ) {
     if (profiles.isEmpty) {
-      return Center(
-        child: Text(
-          '해당 오행의 프로필이 없어요',
-          style: textTheme.bodyMedium?.copyWith(
-            color: textTheme.bodySmall?.color?.withValues(alpha: 0.5),
-          ),
-        ),
+      return const SajuEmptyState(
+        message: '해당 오행의 프로필이 없어요',
+        subtitle: '다른 오행 필터를 눌러보거나, 내일 다시 확인해 주세요',
+        characterAssetPath: CharacterAssets.heuksuniEarthDefault,
+        characterName: '흙순이',
       );
     }
 
@@ -150,25 +149,11 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
     );
   }
 
-  Widget _buildErrorState(TextTheme textTheme) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '프로필을 불러오지 못했어요',
-            style: textTheme.bodyMedium?.copyWith(
-              color: textTheme.bodySmall?.color?.withValues(alpha: 0.5),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () =>
-                ref.read(dailyRecommendationsProvider.notifier).refresh(),
-            child: const Text('다시 시도'),
-          ),
-        ],
-      ),
+  Widget _buildErrorState() {
+    return SajuErrorState(
+      message: '프로필을 불러오지 못했어요',
+      onRetry: () =>
+          ref.read(dailyRecommendationsProvider.notifier).refresh(),
     );
   }
 
@@ -176,7 +161,10 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: AppTheme.spacingSm,
+      ),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(

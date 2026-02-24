@@ -100,6 +100,25 @@ class SupabaseHelper {
     return response;
   }
 
+  /// 단일 레코드 조회 (by column value)
+  ///
+  /// [table]: 테이블 이름
+  /// [column]: 조건 컬럼 (예: user_id)
+  /// [value]: 조건값
+  Future<Map<String, dynamic>?> getSingleBy(
+    String table,
+    String column,
+    dynamic value, {
+    String columns = '*',
+  }) async {
+    final response = await _client
+        .from(table)
+        .select(columns)
+        .eq(column, value)
+        .maybeSingle();
+    return response;
+  }
+
   /// 페이지네이션 조회
   ///
   /// [table]: 테이블 이름
