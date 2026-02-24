@@ -5,6 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/network/supabase_client.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/onboarding_page.dart';
 
 part 'app_router.g.dart';
 
@@ -85,15 +87,14 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: RoutePaths.onboarding,
         name: RouteNames.onboarding,
-        builder: (context, state) =>
-            const _PlaceholderPage(title: 'Onboarding'),
+        builder: (context, state) => const OnboardingPage(),
       ),
 
       // 로그인
       GoRoute(
         path: RoutePaths.login,
         name: RouteNames.login,
-        builder: (context, state) => const _PlaceholderPage(title: 'Login'),
+        builder: (context, state) => const LoginPage(),
       ),
 
       // SMS 인증
