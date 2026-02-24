@@ -7,10 +7,10 @@ import '../../data/models/match_profile_model.dart';
 import '../providers/matching_provider.dart';
 import 'compatibility_preview_page.dart';
 
-/// MatchingPage -- 매칭 탭 메인 화면
+/// MatchingPage — 매칭 탭 (토스 스타일 미니멀)
 ///
-/// 오행 필터 칩과 프로필 그리드를 보여주는 매칭 탐색 화면.
-/// 필터링으로 특정 오행 타입의 프로필만 볼 수 있다.
+/// 오행 필터 + 2열 프로필 그리드. 깔끔한 헤더, 넉넉한 그리드 간격,
+/// 절제된 컬러 사용.
 class MatchingPage extends ConsumerStatefulWidget {
   const MatchingPage({super.key});
 
@@ -19,147 +19,118 @@ class MatchingPage extends ConsumerStatefulWidget {
 }
 
 class _MatchingPageState extends ConsumerState<MatchingPage> {
-  /// 선택된 오행 필터 (null = 전체)
   String? _selectedFilter;
 
-  /// 필터 옵션 목록
-  static const _filterOptions = [
-    _FilterOption(label: '전체', value: null),
-    _FilterOption(label: '목(木)', value: 'wood', color: SajuColor.wood),
-    _FilterOption(label: '화(火)', value: 'fire', color: SajuColor.fire),
-    _FilterOption(label: '토(土)', value: 'earth', color: SajuColor.earth),
-    _FilterOption(label: '금(金)', value: 'metal', color: SajuColor.metal),
-    _FilterOption(label: '수(水)', value: 'water', color: SajuColor.water),
+  static const _filters = [
+    _Filter(label: '전체', value: null),
+    _Filter(label: '목', value: 'wood', color: SajuColor.wood),
+    _Filter(label: '화', value: 'fire', color: SajuColor.fire),
+    _Filter(label: '토', value: 'earth', color: SajuColor.earth),
+    _Filter(label: '금', value: 'metal', color: SajuColor.metal),
+    _Filter(label: '수', value: 'water', color: SajuColor.water),
   ];
 
   @override
   Widget build(BuildContext context) {
     final recommendations = ref.watch(dailyRecommendationsProvider);
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('매칭'),
-      ),
-      body: Column(
-        children: [
-          // ---- 1. 오행 필터 칩 행 ----
-          _buildFilterChips(context),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
 
-          // ---- 2. 프로필 그리드 ----
-          Expanded(
-            child: recommendations.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              error: (_, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Colors.grey.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: AppTheme.spacingSm),
-                    Text(
-                      '프로필을 불러오지 못했어요',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: AppTheme.spacingMd),
-                    FilledButton(
-                      onPressed: () {
-                        ref
-                            .read(dailyRecommendationsProvider.notifier)
-                            .refresh();
-                      },
-                      child: const Text('다시 시도'),
-                    ),
-                  ],
+            // ---- 헤더 ----
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                '매칭',
+                style: textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              data: (profiles) {
-                final filtered = _selectedFilter == null
-                    ? profiles
-                    : profiles
-                        .where((p) => p.elementType == _selectedFilter)
-                        .toList();
-                return _buildProfileGrid(context, filtered);
-              },
             ),
-          ),
 
-          // ---- 3. 하단 무료 좋아요 카운터 ----
-          _buildLikeCounter(context),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 18),
 
-  /// 오행 필터 칩 가로 스크롤 행
-  Widget _buildFilterChips(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingSm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _filterOptions.map((option) {
-            final isSelected = _selectedFilter == option.value;
-            return Padding(
-              padding: const EdgeInsets.only(right: AppTheme.spacingSm),
-              child: SajuChip(
-                label: option.label,
-                color: option.color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedFilter = option.value;
-                  });
+            // ---- 필터 칩 ----
+            _buildFilterRow(),
+
+            const SizedBox(height: 16),
+
+            // ---- 프로필 그리드 ----
+            Expanded(
+              child: recommendations.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                error: (_, _) => _buildErrorState(textTheme),
+                data: (profiles) {
+                  final filtered = _selectedFilter == null
+                      ? profiles
+                      : profiles
+                          .where((p) => p.elementType == _selectedFilter)
+                          .toList();
+                  return _buildGrid(context, filtered, textTheme);
                 },
               ),
-            );
-          }).toList(),
+            ),
+
+            // ---- 하단 무료 좋아요 잔여 ----
+            _buildBottomBar(context, textTheme),
+          ],
         ),
       ),
     );
   }
 
-  /// 프로필 2열 그리드
-  Widget _buildProfileGrid(BuildContext context, List<MatchProfile> profiles) {
+  Widget _buildFilterRow() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: _filters.map((f) {
+          final selected = _selectedFilter == f.value;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: SajuChip(
+              label: f.label,
+              color: f.color,
+              size: SajuSize.sm,
+              isSelected: selected,
+              onTap: () => setState(() => _selectedFilter = f.value),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildGrid(
+    BuildContext context,
+    List<MatchProfile> profiles,
+    TextTheme textTheme,
+  ) {
     if (profiles.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 48,
-              color: Colors.grey.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            Text(
-              '해당 오행의 프로필이 없어요',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
-            ),
-          ],
+        child: Text(
+          '해당 오행의 프로필이 없어요',
+          style: textTheme.bodyMedium?.copyWith(
+            color: textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+          ),
         ),
       );
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingSm,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.65,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
+        childAspectRatio: 0.62,
       ),
       itemCount: profiles.length,
       itemBuilder: (context, index) {
@@ -179,19 +150,39 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
     );
   }
 
-  /// 하단 무료 좋아요 카운터 바
-  Widget _buildLikeCounter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMd,
-        vertical: AppTheme.spacingSm,
+  Widget _buildErrorState(TextTheme textTheme) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '프로필을 불러오지 못했어요',
+            style: textTheme.bodyMedium?.copyWith(
+              color: textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () =>
+                ref.read(dailyRecommendationsProvider.notifier).refresh(),
+            child: const Text('다시 시도'),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context, TextTheme textTheme) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Colors.grey.withValues(alpha: 0.15),
-            width: 0.5,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         ),
       ),
@@ -200,17 +191,20 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.favorite_rounded,
-              size: 16,
-              color: AppTheme.fireColor,
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.fireColor.withValues(alpha: 0.6),
+              ),
             ),
-            const SizedBox(width: AppTheme.spacingXs),
+            const SizedBox(width: 8),
             Text(
-              '오늘 무료 좋아요: 3/3회 남음',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+              '오늘 무료 좋아요 3/3회 남음',
+              style: textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -219,16 +213,8 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
   }
 }
 
-// =============================================================================
-// 필터 옵션 데이터 클래스
-// =============================================================================
-
-class _FilterOption {
-  const _FilterOption({
-    required this.label,
-    required this.value,
-    this.color,
-  });
+class _Filter {
+  const _Filter({required this.label, required this.value, this.color});
 
   final String label;
   final String? value;

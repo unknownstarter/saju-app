@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,11 +9,10 @@ import '../../../matching/data/models/match_profile_model.dart';
 import '../../../matching/presentation/pages/compatibility_preview_page.dart';
 import '../../../matching/presentation/providers/matching_provider.dart';
 
-/// HomePage -- 홈 탭 메인 화면
+/// HomePage — 홈 탭 (토스 스타일 미니멀)
 ///
-/// 라이트(캐주얼) 모드로 표시되며, 오늘의 추천 매칭, 받은 좋아요,
-/// 캐릭터 인사말과 오늘의 사주 한마디를 보여준다.
-/// AppBar 없이 클린한 레이아웃을 사용한다.
+/// 타이포그래피 위계로 구조를 잡고, 여백으로 호흡을 주는 깔끔한 레이아웃.
+/// 아이콘/장식 최소화, 핵심 정보만 노출.
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
@@ -19,154 +20,129 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final recommendations = ref.watch(dailyRecommendationsProvider);
     final receivedLikes = ref.watch(receivedLikesProvider);
+    final textTheme = Theme.of(context).textTheme;
 
-    return Theme(
-      data: AppTheme.light,
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            backgroundColor: AppTheme.light.scaffoldBackgroundColor,
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMd,
-                  vertical: AppTheme.spacingSm,
-                ),
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+
+              // ---- 1. 인사 ----
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: AppTheme.spacingSm),
-
-                    // ---- 1. 캐릭터 인사 섹션 ----
-                    const SajuCharacterBubble(
-                      characterName: '나무리',
-                      message: '안녕! 오늘의 운명적 인연을 찾아봐~',
-                      elementColor: SajuColor.wood,
-                      characterAssetPath:
-                          'assets/images/characters/wood_happy.png',
-                    ),
-
-                    const SizedBox(height: AppTheme.spacingLg),
-
-                    // ---- 2. 오늘의 추천 매칭 섹션 ----
-                    _SectionTitle(
-                      title: '오늘의 추천',
-                      icon: Icons.auto_awesome,
-                    ),
-                    const SizedBox(height: AppTheme.spacingSm),
-                    recommendations.when(
-                      loading: () => const SizedBox(
-                        height: 280,
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                      error: (_, _) => SizedBox(
-                        height: 280,
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                size: 40,
-                                color: Colors.grey.withValues(alpha: 0.5),
-                              ),
-                              const SizedBox(height: AppTheme.spacingSm),
-                              Text(
-                                '추천을 불러오지 못했어요',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      data: (profiles) => _RecommendationList(
-                        profiles: profiles,
-                        ref: ref,
+                    Text(
+                      '오늘의 인연을\n만나봐요',
+                      style: textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        height: 1.3,
                       ),
                     ),
-
-                    const SizedBox(height: AppTheme.spacingLg),
-
-                    // ---- 3. 나를 좋아한 사람 섹션 ----
-                    _SectionTitle(
-                      title: '나를 좋아한 사람',
-                      icon: Icons.favorite_rounded,
-                    ),
-                    const SizedBox(height: AppTheme.spacingSm),
-                    receivedLikes.when(
-                      loading: () => const SizedBox(
-                        height: 80,
-                        child: Center(child: CircularProgressIndicator()),
+                    const SizedBox(height: 6),
+                    Text(
+                      '사주가 이끄는 운명적 만남',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: textTheme.bodySmall?.color,
                       ),
-                      error: (_, _) => const SizedBox.shrink(),
-                      data: (likes) => _ReceivedLikesCard(count: likes.length),
                     ),
-
-                    const SizedBox(height: AppTheme.spacingLg),
-
-                    // ---- 4. 오늘의 사주 한마디 ----
-                    _SectionTitle(
-                      title: '오늘의 사주 한마디',
-                      icon: Icons.stars_rounded,
-                    ),
-                    const SizedBox(height: AppTheme.spacingSm),
-                    const SajuCharacterBubble(
-                      characterName: '물결이',
-                      message: '오늘은 새로운 인연이 다가올 기운이 느껴져요.\n'
-                          '마음을 열고 자연스럽게 대화해보세요.',
-                      elementColor: SajuColor.water,
-                      characterAssetPath:
-                          'assets/images/characters/water_happy.png',
-                    ),
-
-                    const SizedBox(height: AppTheme.spacingXl),
                   ],
                 ),
               ),
-            ),
-          );
-        },
+
+              const SizedBox(height: 32),
+
+              // ---- 2. 오늘의 추천 ----
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  '오늘의 추천',
+                  style: textTheme.titleLarge,
+                ),
+              ),
+              const SizedBox(height: 14),
+              recommendations.when(
+                loading: () => const SizedBox(
+                  height: 260,
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                error: (_, _) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _EmptyState(
+                    message: '추천을 불러오지 못했어요',
+                    height: 200,
+                  ),
+                ),
+                data: (profiles) => _RecommendationList(
+                  profiles: profiles,
+                  ref: ref,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // ---- 3. 받은 좋아요 ----
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '받은 좋아요',
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 14),
+                    receivedLikes.when(
+                      loading: () => const SizedBox(
+                        height: 64,
+                        child: Center(
+                          child:
+                              CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      error: (_, _) => const SizedBox.shrink(),
+                      data: (likes) =>
+                          _ReceivedLikesCard(count: likes.length),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // ---- 4. 오늘의 한마디 ----
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '오늘의 한마디',
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 14),
+                    const _FortuneCard(),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 // =============================================================================
-// 섹션 타이틀
-// =============================================================================
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.icon,
-  });
-
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 20,
-          color: AppTheme.mysticGlow,
-        ),
-        const SizedBox(width: AppTheme.spacingXs),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-      ],
-    );
-  }
-}
-
-// =============================================================================
-// 추천 매칭 가로 스크롤 리스트
+// 추천 매칭 가로 스크롤
 // =============================================================================
 
 class _RecommendationList extends StatelessWidget {
@@ -181,26 +157,19 @@ class _RecommendationList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (profiles.isEmpty) {
-      return SizedBox(
-        height: 280,
-        child: Center(
-          child: Text(
-            '아직 추천이 준비되지 않았어요',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
-          ),
-        ),
+      return const _EmptyState(
+        message: '아직 추천이 준비되지 않았어요',
+        height: 200,
       );
     }
 
     return SizedBox(
-      height: 280,
+      height: 260,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: profiles.length,
-        separatorBuilder: (_, _) =>
-            const SizedBox(width: AppTheme.spacingSm),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final profile = profiles[index];
           return SajuMatchCard(
@@ -212,8 +181,8 @@ class _RecommendationList extends StatelessWidget {
             characterAssetPath: profile.characterAssetPath,
             elementType: profile.elementType,
             compatibilityScore: profile.compatibilityScore,
-            width: 200,
-            height: 280,
+            width: 180,
+            height: 260,
             onTap: () => showCompatibilityPreview(context, ref, profile),
           );
         },
@@ -223,7 +192,7 @@ class _RecommendationList extends StatelessWidget {
 }
 
 // =============================================================================
-// 받은 좋아요 카드 (블러 처리된 아이콘 그리드)
+// 받은 좋아요 카드 — 미니멀
 // =============================================================================
 
 class _ReceivedLikesCard extends StatelessWidget {
@@ -233,47 +202,180 @@ class _ReceivedLikesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SajuCard(
-      variant: SajuVariant.elevated,
-      content: Row(
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2B32) : Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Row(
         children: [
-          // 블러 처리된 아이콘들
-          Expanded(
-            child: Row(
+          // 블러 아바타들
+          SizedBox(
+            width: 64,
+            height: 32,
+            child: Stack(
               children: List.generate(
-                count.clamp(0, 4),
-                (index) => Padding(
-                  padding: const EdgeInsets.only(right: AppTheme.spacingXs),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppTheme.firePastel,
-                    ),
-                    child: Icon(
-                      Icons.favorite_rounded,
-                      size: 20,
-                      color: AppTheme.fireColor.withValues(alpha: 0.4),
+                count.clamp(0, 3),
+                (i) => Positioned(
+                  left: i * 18.0,
+                  child: ClipOval(
+                    child: ImageFiltered(
+                      imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.firePastel.withValues(alpha: 0.6),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          // 카운트 텍스트
-          Text(
-            '$count명이 나를 좋아해요',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.fireColor,
-                ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              count > 0 ? '$count명이 좋아해요' : '아직 없어요',
+              style: textTheme.titleSmall,
+            ),
           ),
-          const SizedBox(width: AppTheme.spacingSm),
           Icon(
             Icons.chevron_right_rounded,
-            color: AppTheme.fireColor.withValues(alpha: 0.6),
+            size: 20,
+            color: textTheme.bodySmall?.color?.withValues(alpha: 0.4),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 오늘의 한마디 카드
+// =============================================================================
+
+class _FortuneCard extends StatelessWidget {
+  const _FortuneCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2B32) : Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.waterPastel.withValues(alpha: 0.5),
+                ),
+                child: Center(
+                  child: characterAssetPath != null
+                      ? Image.asset(
+                          characterAssetPath!,
+                          width: 24,
+                          height: 24,
+                          errorBuilder: (_, _, _) => Text(
+                            '물',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.waterColor,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          '물',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.waterColor,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '물결이의 한마디',
+                style: textTheme.titleSmall?.copyWith(
+                  color: AppTheme.waterColor.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '오늘은 새로운 인연이 다가올 기운이 느껴져요.\n마음을 열고 자연스럽게 대화해보세요.',
+            style: textTheme.bodyMedium?.copyWith(
+              height: 1.6,
+              color: textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? get characterAssetPath => 'assets/images/characters/water_happy.png';
+}
+
+// =============================================================================
+// 빈 상태
+// =============================================================================
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.message, this.height = 120});
+
+  final String message;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Center(
+        child: Text(
+          message,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.color
+                    ?.withValues(alpha: 0.5),
+              ),
+        ),
       ),
     );
   }
