@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/saju_avatar.dart';
 import '../../../../core/widgets/saju_badge.dart';
 import '../../../../core/widgets/saju_enums.dart';
 import '../../domain/entities/chat_message_entity.dart';
@@ -46,16 +48,19 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
 
   @override
   Widget build(BuildContext context) {
-    final messagesAsync = ref.watch(chatMessagesProvider(widget.roomId));
+    final theme = Theme.of(context);
     final roomAsync = ref.watch(chatRoomProvider(widget.roomId));
 
-    // 새 메시지 올 때 스크롤
+    // listen으로 새 메시지 감지 + 스크롤
     ref.listen(chatMessagesProvider(widget.roomId), (prev, next) {
       _scrollToBottom();
     });
 
+    // 메시지는 watch로 UI 빌드용
+    final messagesAsync = ref.watch(chatMessagesProvider(widget.roomId));
+
     return Scaffold(
-      appBar: _buildAppBar(context, roomAsync),
+      appBar: _buildAppBar(context, theme, roomAsync),
       body: Column(
         children: [
           // 메시지 영역
@@ -63,10 +68,12 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
             child: messagesAsync.when(
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
+              error: (error, st) => Center(
                 child: Text(
                   '메시지를 불러올 수 없어요',
-                  style: TextStyle(color: Colors.grey.shade500),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
                 ),
               ),
               data: (messages) => _MessageList(
@@ -97,43 +104,24 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
 
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
+    ThemeData theme,
     AsyncValue<ChatRoom?> roomAsync,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final room = roomAsync.valueOrNull;
 
     return AppBar(
       titleSpacing: 0,
       title: Row(
         children: [
-          // 상대 아바타 (작게)
-          if (room?.partnerElementType != null)
-            Container(
-              width: 32,
-              height: 32,
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.fiveElementPastel(
-                    room!.partnerElementType!),
-                border: Border.all(
-                  color: AppTheme.fiveElementColor(room.partnerElementType!)
-                      .withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  room.partnerName?.characters.first ?? '?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.fiveElementColor(
-                        room.partnerElementType!),
-                  ),
-                ),
-              ),
+          // 상대 아바타 — SajuAvatar 디자인 시스템 컴포넌트
+          if (room?.partnerElementType != null) ...[
+            SajuAvatar(
+              name: room!.partnerName ?? '?',
+              size: SajuSize.sm,
+              elementColor: SajuColor.fromElement(room.partnerElementType),
             ),
+            const SizedBox(width: 10),
+          ],
 
           // 이름 + 궁합
           Column(
@@ -142,22 +130,16 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
             children: [
               Text(
                 room?.partnerName ?? '채팅',
-                style: TextStyle(
-                  fontSize: 17,
+                style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   letterSpacing: -0.3,
-                  color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
               if (room?.compatibilityScore != null)
-                Row(
-                  children: [
-                    SajuBadge(
-                      label: '궁합 ${room!.compatibilityScore}%',
-                      size: SajuSize.xs,
-                      color: _scoreToColor(room.compatibilityScore!),
-                    ),
-                  ],
+                SajuBadge(
+                  label: '궁합 ${room!.compatibilityScore}%',
+                  size: SajuSize.xs,
+                  color: _scoreToColor(room.compatibilityScore!),
                 ),
             ],
           ),
@@ -173,22 +155,24 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
   }
 
   void _showChatMenu(BuildContext context) {
+    final theme = Theme.of(context);
+
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingSm),
             Container(
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacingMd),
             ListTile(
               leading: const Icon(Icons.block_outlined),
               title: const Text('차단'),
@@ -207,7 +191,7 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                 // TODO: 신고 로직
               },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingSm),
           ],
         ),
       ),
@@ -242,13 +226,14 @@ class _MessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (messages.isEmpty) {
       return Center(
         child: Text(
           '첫 메시지를 보내보세요!',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade400,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.outline,
           ),
         ),
       );
@@ -256,7 +241,10 @@ class _MessageList extends StatelessWidget {
 
     return ListView.builder(
       controller: scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingMd * 0.75,
+        vertical: AppTheme.spacingSm,
+      ),
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final msg = messages[index];
@@ -266,11 +254,12 @@ class _MessageList extends StatelessWidget {
 
         // 날짜 구분선 표시 여부
         final showDate = prevMsg == null ||
-            !_isSameDay(prevMsg.createdAt, msg.createdAt);
+            !DateFormatter.isSameDay(prevMsg.createdAt, msg.createdAt);
 
         // 시스템 메시지
         if (msg.isSystemMessage) {
           return Column(
+            key: ValueKey(msg.id),
             children: [
               if (showDate) ChatDateDivider(date: msg.createdAt),
               ChatSystemMessage(
@@ -298,6 +287,7 @@ class _MessageList extends StatelessWidget {
         final showTime = !isGroupedWithNext;
 
         return Column(
+          key: ValueKey(msg.id),
           children: [
             if (showDate) ChatDateDivider(date: msg.createdAt),
             ChatMessageBubble(
@@ -341,9 +331,5 @@ class _MessageList extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

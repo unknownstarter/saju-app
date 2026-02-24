@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/saju_avatar.dart';
 import '../../../../core/widgets/saju_badge.dart';
 import '../../../../core/widgets/saju_enums.dart';
@@ -22,42 +23,43 @@ class ChatListPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('채팅'),
         centerTitle: false,
-        titleTextStyle: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
-          color: Theme.of(context).textTheme.headlineMedium?.color,
-        ),
+        titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.5,
+            ),
       ),
       body: chatRoomsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
+        error: (error, st) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.error_outline,
-                  size: 48, color: Colors.grey.shade400),
-              const SizedBox(height: 12),
+                  size: 48, color: Theme.of(context).colorScheme.outline),
+              const SizedBox(height: AppTheme.spacingMd),
               Text(
                 '채팅 목록을 불러올 수 없어요',
-                style: TextStyle(color: Colors.grey.shade500),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
               ),
             ],
           ),
         ),
         data: (rooms) {
           if (rooms.isEmpty) {
-            return _EmptyState();
+            return const _EmptyState();
           }
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
             itemCount: rooms.length,
-            separatorBuilder: (context2, index) => Divider(
+            separatorBuilder: (context, index) => Divider(
               height: 1,
               indent: 72,
               color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
             ),
-            itemBuilder: (context, index) => _ChatRoomTile(room: rooms[index]),
+            itemBuilder: (context, index) =>
+                _ChatRoomTile(room: rooms[index]),
           );
         },
       ),
@@ -76,22 +78,26 @@ class _ChatRoomTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return InkWell(
       onTap: () => context.push(RoutePaths.chatRoomPath(room.id)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMd,
+          vertical: AppTheme.spacingMd * 0.75,
+        ),
         child: Row(
           children: [
-            // 아바타
+            // 아바타 — 디자인 시스템 SajuAvatar
             SajuAvatar(
               name: room.partnerName ?? '?',
               size: SajuSize.lg,
-              elementColor: _elementToColor(room.partnerElementType),
+              elementColor: SajuColor.fromElement(room.partnerElementType),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: AppTheme.spacingMd * 0.75),
 
             // 이름 + 마지막 메시지
             Expanded(
@@ -103,8 +109,7 @@ class _ChatRoomTile extends StatelessWidget {
                     children: [
                       Text(
                         room.partnerName ?? '알 수 없음',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           letterSpacing: -0.3,
                         ),
@@ -120,18 +125,17 @@ class _ChatRoomTile extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppTheme.spacingXs),
 
                   // 둘째 줄: 마지막 메시지 미리보기
                   Text(
                     room.lastMessagePreview,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: room.hasUnread
-                          ? (isDark ? Colors.white70 : Colors.black87)
-                          : (isDark ? Colors.white38 : Colors.grey.shade500),
+                          ? colorScheme.onSurface.withValues(alpha: 0.8)
+                          : colorScheme.outline,
                       fontWeight:
                           room.hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
@@ -140,40 +144,40 @@ class _ChatRoomTile extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.spacingSm),
 
             // 시간 + 안읽음 뱃지
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  _formatTime(room.lastMessageAt ?? room.createdAt),
-                  style: TextStyle(
-                    fontSize: 11,
+                  DateFormatter.formatRelativeTime(
+                    room.lastMessageAt ?? room.createdAt,
+                  ),
+                  style: theme.textTheme.labelSmall?.copyWith(
                     color: room.hasUnread
-                        ? AppTheme.compatibilityGood
-                        : Colors.grey.shade400,
+                        ? colorScheme.primary
+                        : colorScheme.outline,
                   ),
                 ),
                 if (room.hasUnread) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppTheme.spacingXs),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFA8C8E8),
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       room.unreadCount > 99
                           ? '99+'
                           : '${room.unreadCount}',
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -184,34 +188,6 @@ class _ChatRoomTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final diff = now.difference(time);
-
-    if (diff.inMinutes < 1) return '방금';
-    if (diff.inHours < 1) return '${diff.inMinutes}분 전';
-    if (diff.inDays < 1) {
-      final hour = time.hour;
-      final amPm = hour < 12 ? '오전' : '오후';
-      final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-      return '$amPm $displayHour:${time.minute.toString().padLeft(2, '0')}';
-    }
-    if (diff.inDays == 1) return '어제';
-    if (diff.inDays < 7) return '${diff.inDays}일 전';
-    return '${time.month}/${time.day}';
-  }
-
-  static SajuColor _elementToColor(String? element) {
-    return switch (element) {
-      'wood' => SajuColor.wood,
-      'fire' => SajuColor.fire,
-      'earth' => SajuColor.earth,
-      'metal' => SajuColor.metal,
-      'water' => SajuColor.water,
-      _ => SajuColor.primary,
-    };
   }
 
   static SajuColor _scoreToColor(int score) {
@@ -226,37 +202,38 @@ class _ChatRoomTile extends StatelessWidget {
 // =============================================================================
 
 class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppTheme.spacingXl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.chat_bubble_outline,
               size: 64,
-              color: isDark ? Colors.white24 : Colors.grey.shade300,
+              color: colorScheme.outline.withValues(alpha: 0.4),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacingMd),
             Text(
               '아직 채팅이 없어요',
-              style: TextStyle(
-                fontSize: 18,
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white60 : Colors.grey.shade600,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingSm),
             Text(
               '매칭이 성사되면 여기서\n대화를 시작할 수 있어요',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white38 : Colors.grey.shade400,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.outline,
                 height: 1.5,
               ),
             ),

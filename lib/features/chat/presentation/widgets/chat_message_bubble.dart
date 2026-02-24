@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/saju_avatar.dart';
+import '../../../../core/widgets/saju_enums.dart';
 import '../../domain/entities/chat_message_entity.dart';
 
 /// 채팅 메시지 버블 — Sendbird 기본형 스타일
@@ -81,43 +84,47 @@ class _TextBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
+    // 내 버블: primary 색상 기반 / 상대 버블: surface 색상 기반
     final bubbleColor = isMine
-        ? const Color(0xFFA8C8E8).withValues(alpha: isDark ? 0.3 : 1.0)
+        ? colorScheme.primary.withValues(alpha: isDark ? 0.3 : 1.0)
         : isDark
-            ? const Color(0xFF35363F)
-            : const Color(0xFFFEFCF9);
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surface;
 
     final textColor = isMine
-        ? (isDark ? Colors.white : const Color(0xFF1A1A2E))
-        : Theme.of(context).textTheme.bodyLarge?.color;
+        ? (isDark ? colorScheme.onSurface : colorScheme.onPrimary)
+        : colorScheme.onSurface;
 
     final borderRadius = BorderRadius.only(
-      topLeft: const Radius.circular(16),
-      topRight: const Radius.circular(16),
-      bottomLeft: Radius.circular(isMine ? 16 : 4),
-      bottomRight: Radius.circular(isMine ? 4 : 16),
+      topLeft: const Radius.circular(AppTheme.radiusLg),
+      topRight: const Radius.circular(AppTheme.radiusLg),
+      bottomLeft: Radius.circular(isMine ? AppTheme.radiusLg : 4),
+      bottomRight: Radius.circular(isMine ? 4 : AppTheme.radiusLg),
     );
 
     return Padding(
       padding: EdgeInsets.only(
         left: isMine ? 60 : (showAvatar ? 0 : 36),
         right: isMine ? 0 : 60,
-        bottom: showTime ? 8 : 2,
+        bottom: showTime ? AppTheme.spacingSm : 2,
       ),
       child: Row(
         mainAxisAlignment:
             isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // 상대 아바타
+          // 상대 아바타 — SajuAvatar 디자인 시스템 컴포넌트 사용
           if (!isMine && showAvatar) ...[
-            _PartnerAvatar(
-              name: partnerName,
-              element: partnerElement,
+            SajuAvatar(
+              name: partnerName ?? '?',
+              size: SajuSize.sm,
+              elementColor: SajuColor.fromElement(partnerElement),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.spacingSm),
           ],
 
           // 시간 (내 메시지 좌측)
@@ -132,22 +139,20 @@ class _TextBubble extends StatelessWidget {
                 onLongPress?.call();
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: bubbleColor,
                   borderRadius: borderRadius,
                   border: !isMine && !isDark
                       ? Border.all(
-                          color: const Color(0xFFE8E4DF),
+                          color: theme.dividerColor,
                           width: 0.5,
                         )
                       : null,
                 ),
                 child: Text(
                   message.content,
-                  style: TextStyle(
-                    fontSize: 15,
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     height: 1.4,
                     color: textColor,
                   ),
@@ -188,7 +193,7 @@ class _ImageBubble extends StatelessWidget {
       padding: EdgeInsets.only(
         left: isMine ? 60 : 36,
         right: isMine ? 0 : 60,
-        bottom: showTime ? 8 : 2,
+        bottom: showTime ? AppTheme.spacingSm : 2,
       ),
       child: Row(
         mainAxisAlignment:
@@ -201,7 +206,7 @@ class _ImageBubble extends StatelessWidget {
             child: GestureDetector(
               onLongPress: onLongPress,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 220),
                   child: Image.network(
@@ -210,8 +215,11 @@ class _ImageBubble extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 220,
                       height: 160,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                     ),
                   ),
                 ),
@@ -237,11 +245,13 @@ class _DeletedBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Padding(
       padding: EdgeInsets.only(
         left: isMine ? 60 : 36,
         right: isMine ? 0 : 60,
-        bottom: 8,
+        bottom: AppTheme.spacingSm,
       ),
       child: Row(
         mainAxisAlignment:
@@ -250,18 +260,17 @@ class _DeletedBubble extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               border: Border.all(
-                color: Colors.grey.withValues(alpha: 0.2),
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 width: 0.5,
               ),
             ),
             child: Text(
               '삭제된 메시지',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -273,44 +282,8 @@ class _DeletedBubble extends StatelessWidget {
 }
 
 // =============================================================================
-// 공통 위젯
+// 시간 라벨
 // =============================================================================
-
-class _PartnerAvatar extends StatelessWidget {
-  const _PartnerAvatar({this.name, this.element});
-
-  final String? name;
-  final String? element;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = element != null
-        ? AppTheme.fiveElementColor(element!)
-        : Colors.grey;
-
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: element != null
-            ? AppTheme.fiveElementPastel(element!)
-            : Colors.grey.shade200,
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
-      ),
-      child: Center(
-        child: Text(
-          name?.isNotEmpty == true ? name!.characters.first : '?',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _TimeLabel extends StatelessWidget {
   const _TimeLabel({required this.time, required this.isRead});
@@ -320,13 +293,10 @@ class _TimeLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hour = time.hour;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final amPm = hour < 12 ? '오전' : '오후';
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingXs),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -334,13 +304,13 @@ class _TimeLabel extends StatelessWidget {
             Icon(
               Icons.done_all,
               size: 14,
-              color: const Color(0xFFA8C8E8),
+              color: theme.colorScheme.primary,
             ),
           Text(
-            '$amPm $displayHour:$minute',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade500,
+            DateFormatter.formatTime(time),
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontSize: 11,
+              color: theme.colorScheme.outline,
             ),
           ),
         ],

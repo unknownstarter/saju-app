@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
+
 /// 채팅 입력 바 — Sendbird 기본형 스타일
 ///
 /// 텍스트 입력 + 전송 버튼 + 이미지 첨부 버튼
@@ -50,14 +52,15 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1D1E23) : Colors.white,
+        color: theme.scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: isDark ? const Color(0xFF35363F) : const Color(0xFFE8E4DF),
+            color: theme.dividerColor,
             width: 0.5,
           ),
         ),
@@ -65,7 +68,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.all(AppTheme.spacingSm),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -74,26 +77,22 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 onPressed: widget.enabled ? widget.onImageTap : null,
                 icon: Icon(
                   Icons.add_photo_alternate_outlined,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.5)
-                      : Colors.grey.shade500,
+                  color: colorScheme.outline,
                   size: 24,
                 ),
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(AppTheme.spacingSm),
                 constraints: const BoxConstraints(),
               ),
 
-              const SizedBox(width: 4),
+              const SizedBox(width: AppTheme.spacingXs),
 
               // 텍스트 입력
               Expanded(
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 120),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2A2B32)
-                        : const Color(0xFFF7F3EE),
-                    borderRadius: BorderRadius.circular(20),
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                   ),
                   child: TextField(
                     controller: _controller,
@@ -101,20 +100,16 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     maxLines: null,
                     maxLength: 1000,
                     textInputAction: TextInputAction.newline,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: isDark ? Colors.white : Colors.black87,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
                       hintText: '메시지를 입력하세요',
-                      hintStyle: TextStyle(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.3)
-                            : Colors.grey.shade400,
-                        fontSize: 15,
+                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.outline.withValues(alpha: 0.6),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: AppTheme.spacingMd,
                         vertical: 10,
                       ),
                       border: InputBorder.none,
@@ -124,7 +119,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 ),
               ),
 
-              const SizedBox(width: 4),
+              const SizedBox(width: AppTheme.spacingXs),
 
               // 전송 버튼
               AnimatedOpacity(
@@ -139,8 +134,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _hasText
-                          ? const Color(0xFFA8C8E8)
-                          : Colors.grey.shade300,
+                          ? colorScheme.primary
+                          : colorScheme.outline.withValues(alpha: 0.3),
                     ),
                     child: const Icon(
                       Icons.arrow_upward,

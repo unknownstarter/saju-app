@@ -102,8 +102,8 @@ class SendMessageNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       final repo = _ref.read(chatRepositoryProvider);
       await repo.deleteMessage(messageId);
-    } catch (_) {
-      // 삭제 실패는 무시
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
     }
   }
 }
