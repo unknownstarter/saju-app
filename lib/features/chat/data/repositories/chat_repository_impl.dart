@@ -24,15 +24,12 @@ class ChatRepositoryImpl implements ChatRepository {
       onChanged: () => _loadAndEmitRooms(userId, controller),
     );
 
-    // 메시지 테이블 변경도 감지 (새 메시지 → 목록 업데이트)
-    final msgChannel = _datasource.subscribeToMessages(
-      '', // 전체 메시지 감지를 위해 빈 roomId는 사용하지 않음
-      onNewMessage: (_) => _loadAndEmitRooms(userId, controller),
-    );
+    // NOTE: 채팅방 목록 갱신은 roomChannel(채팅방 테이블 변경)에만 의존.
+    // 개별 메시지 수신 시 목록 갱신은 각 채팅방의 watchMessages()에서
+    // Supabase Realtime trigger로 처리됨. (빈 roomId 구독 제거)
 
     controller.onCancel = () {
       _datasource.unsubscribe(roomChannel);
-      _datasource.unsubscribe(msgChannel);
       controller.close();
     };
 
@@ -76,14 +73,18 @@ class ChatRepositoryImpl implements ChatRepository {
     final channel = _datasource.subscribeToMessages(
       roomId,
       onNewMessage: (model) {
-        final msg = model.toEntity();
-        // 중복 방지
-        if (!messages.any((m) => m.id == msg.id)) {
-          messages.add(msg);
-          messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-          if (!controller.isClosed) {
-            controller.add(List.unmodifiable(messages));
+        try {
+          final msg = model.toEntity();
+          // 중복 방지
+          if (!messages.any((m) => m.id == msg.id)) {
+            messages.add(msg);
+            messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+            if (!controller.isClosed) {
+              controller.add(List.unmodifiable(messages));
+            }
           }
+        } catch (e) {
+          if (!controller.isClosed) controller.addError(e);
         }
       },
     );

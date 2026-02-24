@@ -137,9 +137,9 @@ class _ChatInputBarState extends State<ChatInputBar> {
                           ? colorScheme.primary
                           : colorScheme.outline.withValues(alpha: 0.3),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_upward,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 20,
                     ),
                   ),

@@ -185,7 +185,9 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
               leading: Icon(Icons.report_outlined,
                   color: AppTheme.fireColor),
               title: Text('신고',
-                  style: TextStyle(color: AppTheme.fireColor)),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.fireColor,
+                  )),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: 신고 로직
@@ -325,7 +327,9 @@ class _MessageList extends StatelessWidget {
             },
             child: Text(
               '삭제',
-              style: TextStyle(color: AppTheme.fireColor),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppTheme.fireColor,
+                  ),
             ),
           ),
         ],
