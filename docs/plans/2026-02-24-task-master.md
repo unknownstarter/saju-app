@@ -1,6 +1,6 @@
-# 테스크 마스터 — 2026-02-25 (updated)
+# 테스크 마스터 — 2026-02-25 (v3)
 
-> **작성일**: 2026-02-24 | **갱신**: 2026-02-25
+> **작성일**: 2026-02-24 | **갱신**: 2026-02-25 저녁
 > **목적**: 다음에 할 일을 한곳에 정리해, 다른 디바이스에서 보고 연속으로 작업할 수 있게 함.
 > **참조**: PRD `docs/plans/2026-02-24-app-design.md`, 개선 제안서 `docs/plans/2026-02-24-saju-궁합-engine-improvement-proposal.md`, dev-log `docs/dev-log/2026-02-24-progress.md`
 
@@ -27,12 +27,38 @@
 | 8 | 두 퍼널 아키텍처 (DB 11컬럼 + 트리거 + RLS + 라우터 게이트) | `3944840` | ✅ |
 | 9 | 궁합 프리뷰 버그 수정 (Mock 분기 + upsert onConflict) | `f41f4ae` | ✅ |
 | 10 | 궁합 프리뷰 와우 모먼트 (게이지 1800ms + 딜레이 페이드인 + 글로우) | `f41f4ae` | ✅ |
+| 11 | UI 토큰 시스템 구현 (ThemeExtension 기반 SajuColors/Typography/Elevation) | `a47c5fa` | ✅ |
+| 12 | 코어 위젯 11개 + 피처 레이어 18개 토큰 마이그레이션 (deprecated 0개) | `0758045` | ✅ |
+| 13 | AI 관상 + 동물상 Feature 설계 완료 (PM/Tech/Content/Growth 4개 에이전트 분석) | — | ✅ |
+| 14 | 관상 구현 계획서 작성 (13 Tasks) | — | ✅ |
 
 ---
 
 ## 2. 다음에 할 일 (우선순위순)
 
-### 즉시 (High) — 매칭·궁합 실데이터 연동
+### 🔥 즉시 (Highest) — AI 관상 + 동물상 Feature 구현
+
+> **전략**: 관상을 온보딩에 넣어 사진 3장을 자연스럽게 확보 → 데이팅 퍼널 전환율 극대화
+> **구현 계획**: `docs/plans/2026-02-25-gwansang-implementation.md` (13 Tasks)
+> **설계 문서**: 아래 4개 참조
+
+| # | Task | 담당 관점 | 산출물/참고 | 상태 |
+|---|------|-----------|-------------|------|
+| G1 | **패키지 추가 + 상수 등록** | Flutter | pubspec.yaml, app_constants.dart | ⬜ |
+| G2 | **도메인 엔티티** (GwansangProfile, AnimalType 10종, FaceMeasurements) | Flutter | 3개 파일 생성 | ⬜ |
+| G3 | **Data 레이어** (Model, Datasource, Repository) | Flutter + Backend | 4개 파일 생성 | ⬜ |
+| G4 | **FaceAnalyzerService** (ML Kit on-device 얼굴 측정) | Flutter | google_mlkit_face_detection | ⬜ |
+| G5 | **DI 등록 + Riverpod Provider** | Flutter | providers.dart, gwansang_provider.dart | ⬜ |
+| G6 | **라우트 등록 + 사주 결과→관상 연결** | Flutter | app_router.dart, saju_result_page.dart 수정 | ⬜ |
+| G7 | **관상 브릿지 페이지** ("관상까지 더하면...") | Flutter | gwansang_bridge_page.dart | ⬜ |
+| G8 | **사진 업로드 페이지** (3장 가이드 + 얼굴 검증) | Flutter | gwansang_photo_page.dart | ⬜ |
+| G9 | **관상 분석 로딩 페이지** (8초 연출) | Flutter | gwansang_analysis_page.dart | ⬜ |
+| G10 | **관상 결과 페이지** (🐱 동물상 리빌 + 바이럴 공유) | Flutter | gwansang_result_page.dart + 위젯 2개 | ⬜ |
+| G11 | **매칭 프로필 사진 스킵** (관상 사진 자동 연동) | Flutter | matching_profile_page.dart 수정 | ⬜ |
+| G12 | **Supabase 마이그레이션 + Edge Function** | Backend | DB 테이블 + generate-gwansang-reading | ⬜ |
+| G13 | **통합 검증** (flutter analyze + 빌드) | QA | 0 errors 확인 | ⬜ |
+
+### 기존 (High) — 매칭·궁합 실데이터 연동
 
 | # | Task | 담당 관점 | 산출물/참고 | 상태 |
 |---|------|-----------|-------------|------|
@@ -76,6 +102,11 @@
 | `docs/plans/2026-02-24-app-design.md` | PRD·MVP 플로우·화면 설계 |
 | `docs/plans/2026-02-24-saju-궁합-engine-improvement-proposal.md` | 궁합 엔진 Phase 2/3 로드맵 |
 | `docs/plans/2026-02-24-phase1-calculate-compatibility-spec.md` | 궁합 API 스펙·배점·규칙집 |
+| `docs/plans/2026-02-25-ui-token-system-design.md` | UI 토큰 시스템 설계 (ThemeExtension) |
+| `docs/plans/2026-02-25-gwansang-implementation.md` | **관상 구현 계획 (13 Tasks)** |
+| `docs/plans/2026-02-25-gwansang-onboarding-funnel.md` | 관상 온보딩 퍼널 설계 (PM) |
+| `docs/plans/2026-02-25-gwansang-ai-architecture.md` | 관상 기술 아키텍처 (ML Kit + Claude) |
+| `docs/plans/2026-02-25-gwansang-content-system.md` | 관상 콘텐츠 시스템 (동물상 + AI 프롬프트) |
 | `CLAUDE.md` | 개발자룰·아키텍처·에셋·라우팅 규칙 |
 
 ---
