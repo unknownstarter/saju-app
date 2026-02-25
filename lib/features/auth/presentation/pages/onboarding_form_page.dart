@@ -63,6 +63,25 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
     _SiJin(name: '해시', hanja: '亥時', timeRange: '21:00~23:00'),
   ];
 
+  /// 시진 index → HH:mm 대표 시각 변환
+  static String _siJinToHHmm(int index) {
+    const times = [
+      '00:00', // 0: 자시
+      '02:00', // 1: 축시
+      '04:00', // 2: 인시
+      '06:00', // 3: 묘시
+      '08:00', // 4: 진시
+      '10:00', // 5: 사시
+      '12:00', // 6: 오시
+      '14:00', // 7: 미시
+      '16:00', // 8: 신시
+      '18:00', // 9: 유시
+      '20:00', // 10: 술시
+      '22:00', // 11: 해시
+    ];
+    return times[index];
+  }
+
   // ---------------------------------------------------------------------------
   // 각 단계의 캐릭터 정보
   // ---------------------------------------------------------------------------
@@ -148,8 +167,8 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
       'name': _nameController.text.trim(),
       'gender': _selectedGender,
       'birthDate': _birthDate?.toIso8601String(),
-      'birthHour': _selectedSiJinIndex != null
-          ? _siJinList[_selectedSiJinIndex!].name
+      'birthTime': _selectedSiJinIndex != null
+          ? _siJinToHHmm(_selectedSiJinIndex!)
           : null,
     };
 

@@ -83,10 +83,19 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
   Future<void> _onFormComplete(Map<String, dynamic> formData) async {
     try {
-      await ref
+      final user = await ref
           .read(onboardingNotifierProvider.notifier)
           .saveOnboardingData(formData);
-      if (mounted) context.go(RoutePaths.sajuAnalysis);
+      if (mounted) {
+        final analysisData = <String, dynamic>{
+          'userId': user.id,
+          'birthDate': formData['birthDate'] as String?,
+          'birthTime': formData['birthTime'] as String?,
+          'isLunar': false,
+          'userName': formData['name'] as String?,
+        };
+        context.go(RoutePaths.sajuAnalysis, extra: analysisData);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
