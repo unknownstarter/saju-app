@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/network/supabase_client.dart';
 import '../providers/notification_badge_provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -30,6 +31,10 @@ class RouterAuthNotifier extends ChangeNotifier {
   RouterAuthNotifier(this._ref) {
     // Supabase 인증 상태 스트림을 구독
     _ref.listen(authStateProvider, (previous, next) {
+      notifyListeners();
+    });
+    // 유저 프로필 변경 시 리다이렉트 재평가 (퍼널 게이트)
+    _ref.listen(currentUserProfileProvider, (previous, next) {
       notifyListeners();
     });
   }
@@ -81,6 +86,21 @@ GoRouter appRouter(Ref ref) {
       // 로그인한 상태에서 로그인/스플래시 페이지 접근 시 → 홈으로
       if (isLoggedIn && (currentPath == RoutePaths.login || currentPath == RoutePaths.splash)) {
         return RoutePaths.home;
+      }
+
+      // --- 퍼널 게이트: 매칭 탭 접근 제어 ---
+      if (isLoggedIn && currentPath == RoutePaths.matching) {
+        final userProfile = ref.read(currentUserProfileProvider).valueOrNull;
+        if (userProfile != null) {
+          // 사주 미완료 → 사주 분석으로
+          if (!userProfile.isSajuComplete) {
+            return RoutePaths.sajuAnalysis;
+          }
+          // 프로필 미완성 → 매칭 프로필 완성으로
+          if (!userProfile.isProfileComplete) {
+            return RoutePaths.matchingProfile;
+          }
+        }
       }
 
       // 리다이렉트 불필요

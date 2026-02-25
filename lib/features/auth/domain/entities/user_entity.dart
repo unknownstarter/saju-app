@@ -110,6 +110,7 @@ class UserEntity {
     this.religion,
     this.isSelfieVerified = false,
     this.isProfileComplete = false,
+    this.isSajuComplete = false,
     this.isPremium = false,
     required this.createdAt,
     required this.lastActiveAt,
@@ -194,6 +195,9 @@ class UserEntity {
 
   /// 매칭 프로필 완성 여부 (Phase B 온보딩 완료)
   final bool isProfileComplete;
+
+  /// 사주 퍼널 완료 여부 (DB 트리거로 자동 관리)
+  final bool isSajuComplete;
 
   // --- 구독 상태 ---
 
@@ -290,14 +294,18 @@ class UserEntity {
     return score.clamp(0, 100);
   }
 
-  /// 매칭 가능 여부 (최소 60% — 사진 2장 + 키 + 직업 + 지역)
+  /// 매칭 가능 여부 (DB 트리거 조건과 동일)
+  ///
+  /// 조건: 사주 완료 + 프로필 완성 + 사진 2장+ + 직업 + 지역 + 키 + 자기소개 + 미삭제
   bool get isMatchable =>
       isActive &&
+      isSajuComplete &&
       isProfileComplete &&
       profileImageUrls.length >= 2 &&
       height != null &&
       occupation != null &&
-      location != null;
+      location != null &&
+      bio != null;
 
   // ===========================================================================
   // copyWith
@@ -326,6 +334,7 @@ class UserEntity {
     Religion? religion,
     bool? isSelfieVerified,
     bool? isProfileComplete,
+    bool? isSajuComplete,
     bool? isPremium,
     DateTime? createdAt,
     DateTime? lastActiveAt,
@@ -353,6 +362,7 @@ class UserEntity {
       religion: religion ?? this.religion,
       isSelfieVerified: isSelfieVerified ?? this.isSelfieVerified,
       isProfileComplete: isProfileComplete ?? this.isProfileComplete,
+      isSajuComplete: isSajuComplete ?? this.isSajuComplete,
       isPremium: isPremium ?? this.isPremium,
       createdAt: createdAt ?? this.createdAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,

@@ -28,6 +28,7 @@ class UserModel {
       religion: Religion.fromString(json['religion'] as String?),
       isSelfieVerified: json['is_selfie_verified'] as bool? ?? false,
       isProfileComplete: json['is_profile_complete'] as bool? ?? false,
+      isSajuComplete: json['is_saju_complete'] as bool? ?? false,
       isPremium: json['is_premium'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
       lastActiveAt: DateTime.parse(json['last_active_at'] as String),
@@ -58,6 +59,7 @@ class UserModel {
       'religion': entity.religion?.name,
       'is_selfie_verified': entity.isSelfieVerified,
       'is_profile_complete': entity.isProfileComplete,
+      'is_saju_complete': entity.isSajuComplete,
       'is_premium': entity.isPremium,
     };
   }
