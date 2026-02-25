@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/theme_extensions.dart';
+import '../theme/tokens/saju_animation.dart';
+import '../theme/tokens/saju_spacing.dart';
 import 'saju_enums.dart';
 
 /// SajuCard — 사주 디자인 시스템 카드 컴포넌트
@@ -54,26 +57,24 @@ class SajuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: SajuAnimation.normal,
         curve: Curves.easeInOut,
         padding: padding,
-        decoration: _buildDecoration(isDark),
+        decoration: _buildDecoration(context),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (header != null) ...[
               header!,
-              const SizedBox(height: AppTheme.spacingSm),
+              SajuSpacing.gap8,
             ],
             content,
             if (footer != null) ...[
-              const SizedBox(height: AppTheme.spacingSm),
+              SajuSpacing.gap8,
               footer!,
             ],
           ],
@@ -83,60 +84,50 @@ class SajuCard extends StatelessWidget {
   }
 
   /// variant와 테마에 따른 BoxDecoration 생성
-  BoxDecoration _buildDecoration(bool isDark) {
+  BoxDecoration _buildDecoration(BuildContext context) {
+    final colors = context.sajuColors;
     final borderRadius = BorderRadius.circular(AppTheme.radiusLg);
 
     switch (variant) {
       case SajuVariant.filled:
         return BoxDecoration(
-          color: isDark ? const Color(0xFF35363F) : Colors.white,
+          color: colors.bgElevated,
           borderRadius: borderRadius,
-          border: _resolveBorder(isDark),
+          border: _resolveBorder(),
         );
 
       case SajuVariant.outlined:
-        final defaultBorderColor = isDark
-            ? const Color(0xFF45464F)
-            : const Color(0xFFE8E4DF);
         return BoxDecoration(
           color: Colors.transparent,
           borderRadius: borderRadius,
           border: borderColor != null
               ? Border.all(color: borderColor!, width: 1)
-              : Border.all(color: defaultBorderColor, width: 1),
+              : Border.all(color: colors.borderDefault, width: 1),
         );
 
       case SajuVariant.elevated:
         return BoxDecoration(
-          color: isDark ? const Color(0xFF35363F) : Colors.white,
+          color: colors.bgElevated,
           borderRadius: borderRadius,
-          border: _resolveBorder(isDark),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: _resolveBorder(),
+          boxShadow: context.sajuElevation.mediumShadow,
         );
 
       case SajuVariant.flat:
       case SajuVariant.ghost:
         return BoxDecoration(
-          color: isDark
+          color: context.isDarkMode
               ? Colors.white.withValues(alpha: 0.05)
               : Colors.black.withValues(alpha: 0.02),
           borderRadius: borderRadius,
-          border: _resolveBorder(isDark),
+          border: _resolveBorder(),
         );
     }
   }
 
   /// borderColor가 지정된 경우 해당 색상의 border를 반환,
   /// 그렇지 않으면 null (outlined 제외)
-  Border? _resolveBorder(bool isDark) {
+  Border? _resolveBorder() {
     if (borderColor != null) {
       return Border.all(color: borderColor!, width: 1);
     }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/tokens/saju_animation.dart';
+import '../theme/tokens/saju_spacing.dart';
 
 /// LikeButton — 좋아요 보내기 (Production-level)
 ///
@@ -70,7 +72,7 @@ class _LikeButtonState extends State<LikeButton>
     super.initState();
     _heartController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: SajuAnimation.sheet,
     );
     _heartScale = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 40),
@@ -123,10 +125,10 @@ class _LikeButtonState extends State<LikeButton>
         onTap: _handleTap,
         child: AnimatedScale(
           scale: _isPressed ? 0.95 : 1.0,
-          duration: const Duration(milliseconds: 100),
+          duration: SajuAnimation.fast,
           curve: Curves.easeOut,
           child: AnimatedOpacity(
-            opacity: widget.isDisabled ? 0.4 : 1.0,
+            opacity: widget.isDisabled ? SajuAnimation.disabledOpacity : 1.0,
             duration: const Duration(milliseconds: 150),
             child: Container(
               height: 52,
@@ -164,9 +166,9 @@ class _LikeButtonState extends State<LikeButton>
                             color: Colors.white,
                           ),
                         ),
-                      const SizedBox(width: 8),
+                      SajuSpacing.hGap8,
                       AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
+                        duration: SajuAnimation.normal,
                         child: Text(
                           _isSuccess ? '보냈어요 ♥' : widget.label,
                           key: ValueKey(_isSuccess),

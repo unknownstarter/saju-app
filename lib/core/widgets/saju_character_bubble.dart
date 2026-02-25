@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/tokens/saju_spacing.dart';
 import 'saju_enums.dart';
 
 /// CharacterBubble — 캐릭터 가이드 말풍선 (Production-level)
@@ -63,7 +64,7 @@ class SajuCharacterBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCharacterCircle(color, pastelColor),
-          const SizedBox(width: AppTheme.space8),
+          SajuSpacing.hGap8,
           Expanded(
             child: _buildSpeechBubble(context, isDark, color, pastelColor),
           ),
@@ -145,7 +146,7 @@ class SajuCharacterBubble extends StatelessWidget {
             color: color,
           ),
         ),
-        const SizedBox(height: AppTheme.space4),
+        SajuSpacing.gap4,
         Container(
           padding: size.padding,
           decoration: BoxDecoration(

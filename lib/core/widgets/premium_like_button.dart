@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/tokens/saju_animation.dart';
+import '../theme/tokens/saju_spacing.dart';
 
 /// PremiumLikeButton — 슈퍼 좋아요 (Production-level, Monetization Core)
 ///
@@ -66,6 +68,9 @@ class PremiumLikeButton extends StatefulWidget {
 
 class _PremiumLikeButtonState extends State<PremiumLikeButton>
     with SingleTickerProviderStateMixin {
+  /// 골드 그라디언트 위의 어두운 텍스트/아이콘 색상 (테마 무관)
+  static const _onGoldColor = Color(0xFF1D1E23);
+
   bool _isPressed = false;
   bool _isLoading = false;
   bool _isSuccess = false;
@@ -78,7 +83,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
     super.initState();
     _starController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: SajuAnimation.like,
     );
   }
 
@@ -132,7 +137,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
         onTap: _handleTap,
         child: AnimatedScale(
           scale: _isPressed ? 0.95 : 1.0,
-          duration: const Duration(milliseconds: 100),
+          duration: SajuAnimation.fast,
           curve: Curves.easeOut,
           child: Container(
             height: 56,
@@ -149,7 +154,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: SajuSpacing.page,
               child: Row(
                 children: [
                   // Star icon
@@ -158,7 +163,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                       width: 20, height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(AppTheme.inkBlack),
+                        valueColor: AlwaysStoppedAnimation(_onGoldColor),
                       ),
                     )
                   else
@@ -169,10 +174,10 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                       child: Icon(
                         _isSuccess ? Icons.check_circle : Icons.star_rounded,
                         size: 22,
-                        color: AppTheme.inkBlack,
+                        color: _onGoldColor,
                       ),
                     ),
-                  const SizedBox(width: 8),
+                  SajuSpacing.hGap8,
 
                   // Text column
                   Expanded(
@@ -181,7 +186,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
+                          duration: SajuAnimation.normal,
                           child: Text(
                             _isSuccess
                                 ? '전달 완료!'
@@ -191,7 +196,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                               fontFamily: AppTheme.fontFamily,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.inkBlack,
+                              color: _onGoldColor,
                             ),
                           ),
                         ),
@@ -203,7 +208,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                             style: TextStyle(
                               fontFamily: AppTheme.fontFamily,
                               fontSize: 11,
-                              color: AppTheme.inkBlack.withValues(alpha: 0.6),
+                              color: _onGoldColor.withValues(alpha: 0.6),
                             ),
                           ),
                       ],
@@ -215,7 +220,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.inkBlack.withValues(alpha: 0.12),
+                        color: _onGoldColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       ),
                       child: Text(
@@ -224,7 +229,7 @@ class _PremiumLikeButtonState extends State<PremiumLikeButton>
                           fontFamily: AppTheme.fontFamily,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.inkBlack,
+                          color: _onGoldColor,
                         ),
                       ),
                     ),

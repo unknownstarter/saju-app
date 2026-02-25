@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/entities/compatibility_entity.dart';
 import '../theme/app_theme.dart';
+import '../theme/tokens/saju_spacing.dart';
 
 /// CompatibilityGauge — 궁합 점수 원형 게이지 위젯
 ///
@@ -154,7 +155,7 @@ class _CompatibilityGaugeState extends State<CompatibilityGauge>
                   );
                 },
               ),
-              const SizedBox(height: 2),
+              SajuSpacing.gap2,
               // --- 등급 라벨 ---
               Text(
                 _effectiveGrade.label,

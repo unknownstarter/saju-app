@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/theme_extensions.dart';
+import '../theme/tokens/saju_animation.dart';
+import '../theme/tokens/saju_spacing.dart';
 
 /// CompatibilityCard — 궁합 결과 카드 (Production-level)
 ///
@@ -84,7 +87,7 @@ class _CompatibilityCardState extends State<CompatibilityCard>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
     if (widget.animateOnAppear && !widget.isLoading) {
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(SajuAnimation.slow, () {
         if (mounted) _controller.forward();
       });
     } else if (!widget.animateOnAppear) {
@@ -110,7 +113,8 @@ class _CompatibilityCardState extends State<CompatibilityCard>
   Widget build(BuildContext context) {
     if (widget.isLoading) return _buildSkeleton(context);
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.sajuColors;
+    final elevation = context.sajuElevation;
     final scoreColor = AppTheme.compatibilityColor(widget.score);
     final textTheme = Theme.of(context).textTheme;
 
@@ -129,12 +133,14 @@ class _CompatibilityCardState extends State<CompatibilityCard>
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOut,
           child: Container(
-            padding: const EdgeInsets.all(AppTheme.space16),
+            padding: SajuSpacing.cardInner,
             decoration: BoxDecoration(
-              color: isDark ? AppTheme.inkCard : Colors.white,
+              color: colors.bgElevated,
               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              border: AppTheme.cardBorder(Theme.of(context).brightness),
-              boxShadow: AppTheme.elevationMedium(Theme.of(context).brightness),
+              border: elevation.cardBorder != null
+                  ? Border.fromBorderSide(elevation.cardBorder!)
+                  : null,
+              boxShadow: elevation.mediumShadow,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +160,7 @@ class _CompatibilityCardState extends State<CompatibilityCard>
                         );
                       },
                     ),
-                    const SizedBox(width: AppTheme.space12),
+                    SajuSpacing.hGap12,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +171,7 @@ class _CompatibilityCardState extends State<CompatibilityCard>
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          SajuSpacing.gap2,
                           Text(
                             _grade,
                             style: textTheme.bodySmall?.copyWith(color: scoreColor),
@@ -178,7 +184,7 @@ class _CompatibilityCardState extends State<CompatibilityCard>
 
                 // Strengths
                 if (widget.strengths.isNotEmpty) ...[
-                  const SizedBox(height: AppTheme.space12),
+                  SajuSpacing.gap12,
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -203,7 +209,7 @@ class _CompatibilityCardState extends State<CompatibilityCard>
 
                 // Detail CTA (monetization)
                 if (widget.onDetailTap != null) ...[
-                  const SizedBox(height: AppTheme.space12),
+                  SajuSpacing.gap12,
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -232,19 +238,19 @@ class _CompatibilityCardState extends State<CompatibilityCard>
   }
 
   Widget _buildSkeleton(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final shimmer = isDark ? AppTheme.inkCard : AppTheme.hanjiElevated;
+    final colors = context.sajuColors;
+    final shimmer = colors.bgSecondary;
 
     return Container(
-      padding: const EdgeInsets.all(AppTheme.space16),
+      padding: SajuSpacing.cardInner,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.inkCard : Colors.white,
+        color: colors.bgElevated,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       ),
       child: Row(
         children: [
           Container(width: 56, height: 56, decoration: BoxDecoration(shape: BoxShape.circle, color: shimmer)),
-          const SizedBox(width: 12),
+          SajuSpacing.hGap12,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

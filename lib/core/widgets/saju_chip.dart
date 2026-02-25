@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/tokens/saju_animation.dart';
+import '../theme/tokens/saju_spacing.dart';
 import 'saju_enums.dart';
 
 /// 오행 태그, 관심사, 성격 특성 등을 표시하는 칩 컴포넌트
@@ -84,7 +86,7 @@ class SajuChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: SajuAnimation.normal,
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
           horizontal: size.padding.horizontal / 2,
@@ -105,7 +107,7 @@ class SajuChip extends StatelessWidget {
                 size: chipIconSize,
                 color: isSelected ? resolvedColor : textColor,
               ),
-              SizedBox(width: AppTheme.spacingXs),
+              SajuSpacing.hGap4,
             ],
 
             // Label
@@ -113,7 +115,7 @@ class SajuChip extends StatelessWidget {
 
             // Delete icon
             if (onDeleted != null) ...[
-              SizedBox(width: AppTheme.spacingXs),
+              SajuSpacing.hGap4,
               GestureDetector(
                 onTap: onDeleted,
                 child: Icon(

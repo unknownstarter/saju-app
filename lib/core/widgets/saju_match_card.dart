@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/theme_extensions.dart';
+import '../theme/tokens/saju_animation.dart';
+import '../theme/tokens/saju_spacing.dart';
 
 /// MatchCard — 매칭 프로필 카드 (Production-level)
 ///
@@ -108,7 +111,8 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
   Widget build(BuildContext context) {
     if (widget.isLoading) return _buildSkeleton(context);
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
+    final colors = context.sajuColors;
     final elementColor = AppTheme.fiveElementColor(widget.elementType);
     final elementPastel = AppTheme.fiveElementPastel(widget.elementType);
 
@@ -121,28 +125,28 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
         onTapCancel: _onTapCancel,
         onTap: _onTap,
         child: AnimatedScale(
-          scale: _isPressed ? 0.97 : 1.0,
-          duration: const Duration(milliseconds: 100),
+          scale: _isPressed ? SajuAnimation.pressedScale : 1.0,
+          duration: SajuAnimation.fast,
           curve: Curves.easeOut,
           child: AnimatedOpacity(
-            opacity: widget.isDisabled ? 0.4 : (_isPressed ? 0.9 : 1.0),
-            duration: const Duration(milliseconds: 100),
+            opacity: widget.isDisabled ? SajuAnimation.disabledOpacity : (_isPressed ? 0.9 : 1.0),
+            duration: SajuAnimation.fast,
             child: Container(
               width: widget.width,
               height: widget.height,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: isDark ? AppTheme.inkSurface : Colors.white,
+                color: colors.bgElevated,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                 border: Border.all(
                   color: widget.isPremium
                       ? AppTheme.mysticGlow.withValues(alpha: 0.6)
-                      : (isDark ? AppTheme.dividerDark : const Color(0x0F000000)),
+                      : colors.borderDefault,
                   width: widget.isPremium ? 1.5 : 1,
                 ),
                 boxShadow: widget.isPremium
                     ? [BoxShadow(color: AppTheme.mysticGlow.withValues(alpha: 0.12), blurRadius: 12, spreadRadius: 1)]
-                    : AppTheme.elevationMedium(Theme.of(context).brightness),
+                    : context.sajuElevation.mediumShadow,
               ),
               child: Column(
                 children: [
@@ -177,8 +181,8 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
             : _buildPlaceholder(elementColor, elementPastel),
         // Element badge (top-left)
         Positioned(
-          top: AppTheme.space8,
-          left: AppTheme.space8,
+          top: SajuSpacing.space8,
+          left: SajuSpacing.space8,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -198,8 +202,8 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
         ),
         // Score badge (top-right)
         Positioned(
-          top: AppTheme.space8,
-          right: AppTheme.space8,
+          top: SajuSpacing.space8,
+          right: SajuSpacing.space8,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -258,7 +262,7 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          SajuSpacing.gap4,
           Expanded(
             child: Text(
               widget.bio,
@@ -273,14 +277,14 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
   }
 
   Widget _buildSkeleton(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final shimmerBase = isDark ? AppTheme.inkCard : AppTheme.hanjiElevated;
+    final colors = context.sajuColors;
+    final shimmerBase = colors.bgSecondary;
 
     return Container(
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.inkSurface : Colors.white,
+        color: colors.bgElevated,
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
       ),
       child: Column(
@@ -294,9 +298,9 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(width: 100, height: 14, decoration: BoxDecoration(color: shimmerBase, borderRadius: BorderRadius.circular(4))),
-                  const SizedBox(height: 8),
+                  SajuSpacing.gap8,
                   Container(width: double.infinity, height: 10, decoration: BoxDecoration(color: shimmerBase, borderRadius: BorderRadius.circular(4))),
-                  const SizedBox(height: 4),
+                  SajuSpacing.gap4,
                   Container(width: 140, height: 10, decoration: BoxDecoration(color: shimmerBase, borderRadius: BorderRadius.circular(4))),
                 ],
               ),
