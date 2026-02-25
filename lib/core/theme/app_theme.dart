@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'tokens/saju_colors.dart';
+import 'tokens/saju_typography.dart';
+import 'tokens/saju_elevation.dart';
+
 /// Production UI System — "사주인연"
 ///
 /// Senior Product Designer perspective (Tinder × Toss).
@@ -57,24 +61,37 @@ abstract final class AppTheme {
   // ===========================================================================
 
   // Light backgrounds
+  @Deprecated('Use context.sajuColors.bgPrimary instead')
   static const hanjiBg = Color(0xFFF7F3EE); // bg.primary
+  @Deprecated('Use context.sajuColors.bgElevated instead')
   static const hanjiSurface = Color(0xFFFEFCF9); // bg.elevated
+  @Deprecated('Use context.sajuColors.bgSecondary instead')
   static const hanjiElevated = Color(0xFFF0EDE8); // bg.secondary
 
   // Dark backgrounds
+  @Deprecated('Use context.sajuColors.bgPrimary instead')
   static const inkBlack = Color(0xFF1D1E23); // bg.primary
+  @Deprecated('Use context.sajuColors.bgSecondary instead')
   static const inkSurface = Color(0xFF2A2B32); // bg.secondary
+  @Deprecated('Use context.sajuColors.bgElevated instead')
   static const inkCard = Color(0xFF35363F); // bg.elevated
 
   // Text
+  @Deprecated('Use context.sajuColors.textPrimary instead')
   static const textDark = Color(0xFF2D2D2D);
+  @Deprecated('Use context.sajuColors.textPrimary instead')
   static const textLight = Color(0xFFE8E4DF);
+  @Deprecated('Use context.sajuColors.textSecondary instead')
   static const textSecondaryDark = Color(0xFF6B6B6B);
+  @Deprecated('Use context.sajuColors.textSecondary instead')
   static const textSecondaryLight = Color(0xFFA09B94);
+  @Deprecated('Use context.sajuColors.textTertiary instead')
   static const textHint = Color(0xFFA0A0A0);
 
   // Borders & dividers
+  @Deprecated('Use context.sajuColors.borderDefault instead')
   static const dividerLight = Color(0xFFE8E4DF);
+  @Deprecated('Use context.sajuColors.borderDefault instead')
   static const dividerDark = Color(0xFF35363F);
 
   /// Compatibility score → color
@@ -127,11 +144,17 @@ abstract final class AppTheme {
   static const space64 = 64.0;
 
   // Legacy aliases (deprecated — use space* tokens)
+  @Deprecated('Use SajuSpacing.space4 instead')
   static const spacingXs = space4;
+  @Deprecated('Use SajuSpacing.space8 instead')
   static const spacingSm = space8;
+  @Deprecated('Use SajuSpacing.space16 instead')
   static const spacingMd = space16;
+  @Deprecated('Use SajuSpacing.space24 instead')
   static const spacingLg = space24;
+  @Deprecated('Use SajuSpacing.space32 instead')
   static const spacingXl = space32;
+  @Deprecated('Use SajuSpacing.space48 instead')
   static const spacingXxl = space48;
 
   // ===========================================================================
@@ -363,6 +386,13 @@ abstract final class AppTheme {
       space: 0,
       color: dividerLight,
     ),
+
+    // --- Saju Design Tokens ---
+    extensions: const [
+      SajuColors.light,
+      SajuTypography.light,
+      SajuElevation.light,
+    ],
   );
 
   // ===========================================================================
@@ -510,6 +540,13 @@ abstract final class AppTheme {
       space: 0,
       color: dividerDark,
     ),
+
+    // --- Saju Design Tokens ---
+    extensions: const [
+      SajuColors.dark,
+      SajuTypography.dark,
+      SajuElevation.dark,
+    ],
   );
 
   // ===========================================================================
