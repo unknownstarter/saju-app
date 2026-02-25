@@ -20,3 +20,6 @@ export 'saju_match_card.dart';
 export 'compatibility_gauge.dart';
 export 'saju_empty_state.dart';
 export 'saju_error_state.dart';
+export 'compatibility_card.dart';
+export 'like_button.dart';
+export 'premium_like_button.dart';

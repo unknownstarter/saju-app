@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../errors/failures.dart';
+
 part 'supabase_client.g.dart';
 
 // =============================================================================
@@ -250,6 +252,8 @@ class SupabaseHelper {
   ///
   /// [functionName]: 함수 이름
   /// [body]: 요청 본문
+  ///
+  /// 응답 상태가 200~299가 아니면 [ServerFailure]를 throw합니다.
   Future<dynamic> invokeFunction(
     String functionName, {
     Map<String, dynamic>? body,
@@ -258,6 +262,17 @@ class SupabaseHelper {
       functionName,
       body: body,
     );
+
+    final status = response.status;
+    if (status < 200 || status >= 300) {
+      throw ServerFailure(
+        message: '서버에 일시적인 문제가 발생했어요. 잠시 후 다시 시도해 주세요.',
+        code: 'EDGE_FUNCTION_ERROR',
+        statusCode: status,
+        originalException: 'Edge Function "$functionName" returned status $status',
+      );
+    }
+
     return response.data;
   }
 }

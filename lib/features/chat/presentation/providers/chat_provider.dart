@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
+import '../../../../core/network/supabase_client.dart';
 import '../../domain/entities/chat_message_entity.dart';
 import '../../domain/entities/chat_room_entity.dart';
 
@@ -13,14 +14,17 @@ import '../../domain/entities/chat_room_entity.dart';
 /// Realtime으로 업데이트되는 채팅방 목록을 제공합니다.
 final chatRoomsProvider = StreamProvider<List<ChatRoom>>((ref) {
   final repo = ref.watch(chatRepositoryProvider);
-  // TODO: 실제 userId로 교체 (현재는 Mock)
-  return repo.watchChatRooms('current-user');
+  final userId = ref.watch(currentUserProvider)?.id ?? '';
+  if (userId.isEmpty) return const Stream.empty();
+  return repo.watchChatRooms(userId);
 });
 
 /// 전체 안읽은 메시지 수
 final totalUnreadCountProvider = FutureProvider<int>((ref) {
   final repo = ref.watch(chatRepositoryProvider);
-  return repo.getTotalUnreadCount('current-user');
+  final userId = ref.watch(currentUserProvider)?.id ?? '';
+  if (userId.isEmpty) return 0;
+  return repo.getTotalUnreadCount(userId);
 });
 
 // =============================================================================
@@ -33,9 +37,12 @@ final totalUnreadCountProvider = FutureProvider<int>((ref) {
 final chatMessagesProvider =
     StreamProvider.family<List<ChatMessage>, String>((ref, roomId) {
   final repo = ref.watch(chatRepositoryProvider);
+  final userId = ref.watch(currentUserProvider)?.id ?? '';
 
   // 채팅방 진입 시 읽음 처리
-  repo.markAsRead(roomId, 'current-user');
+  if (userId.isNotEmpty) {
+    repo.markAsRead(roomId, userId);
+  }
 
   return repo.watchMessages(roomId);
 });
@@ -57,19 +64,21 @@ class SendMessageNotifier extends StateNotifier<AsyncValue<void>> {
 
   final Ref _ref;
 
+  String get _userId => _ref.read(currentUserProvider)?.id ?? '';
+
   /// 텍스트 메시지 전송
   Future<void> send({
     required String roomId,
     required String content,
   }) async {
-    if (content.trim().isEmpty) return;
+    if (content.trim().isEmpty || _userId.isEmpty) return;
 
     state = const AsyncValue.loading();
     try {
       final repo = _ref.read(chatRepositoryProvider);
       await repo.sendMessage(
         roomId: roomId,
-        senderId: 'current-user',
+        senderId: _userId,
         content: content.trim(),
       );
       state = const AsyncValue.data(null);
@@ -83,12 +92,14 @@ class SendMessageNotifier extends StateNotifier<AsyncValue<void>> {
     required String roomId,
     required String imagePath,
   }) async {
+    if (_userId.isEmpty) return;
+
     state = const AsyncValue.loading();
     try {
       final repo = _ref.read(chatRepositoryProvider);
       await repo.sendImageMessage(
         roomId: roomId,
-        senderId: 'current-user',
+        senderId: _userId,
         imagePath: imagePath,
       );
       state = const AsyncValue.data(null);

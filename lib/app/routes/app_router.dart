@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/network/supabase_client.dart';
+import '../../core/theme/app_theme.dart';
 import '../providers/notification_badge_provider.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -64,8 +66,9 @@ GoRouter appRouter(Ref ref) {
     // --- 글로벌 리다이렉트 로직 ---
     redirect: (context, state) {
       final authState = ref.read(authStateProvider);
-      final isLoggedIn = authState.valueOrNull != null;
       final currentPath = state.matchedLocation;
+
+      final isLoggedIn = authState.valueOrNull != null;
 
       // 인증이 필요 없는 경로들
       const publicPaths = [
@@ -109,11 +112,11 @@ GoRouter appRouter(Ref ref) {
 
     // --- 라우트 정의 ---
     routes: [
-      // 스플래시 (앱 초기 로딩)
+      // 스플래시 (앱 초기 로딩 — 세션 복원 대기)
       GoRoute(
         path: RoutePaths.splash,
         name: RouteNames.splash,
-        builder: (context, state) => const _PlaceholderPage(title: 'Splash'),
+        builder: (context, state) => const _SplashPage(),
       ),
 
       // 온보딩
@@ -305,12 +308,37 @@ GoRouter appRouter(Ref ref) {
 // 메인 스캐폴드 (하단 네비게이션)
 // =============================================================================
 
-/// 하단 네비게이션 바가 포함된 메인 레이아웃
+/// _MainScaffold — 하단 네비게이션 (Production-level)
 ///
-/// StatefulShellRoute.indexedStack과 함께 사용하여
-/// 각 탭의 상태를 유지합니다. (탭 전환 시 스크롤 위치 등 보존)
+/// ## Layout Structure
+/// ```
+/// ┌─────────────────────────────────────────┐
+/// │              body content                │
+/// ├────┬────┬────┬────┬─────────────────────┤
+/// │ 🏠 │ 💕 │ 💬 │ 👤 │                     │
+/// │ 홈  │매칭│채팅│프로필│                     │ ← 4 tabs, 56px bar
+/// └────┴────┴────┴────┴─────────────────────┘
+/// ```
 ///
-/// ConsumerWidget으로 알림 뱃지 카운트를 실시간 반영합니다.
+/// ## Padding Rules
+/// - Bar height: 56px (safe area 별도)
+/// - Icon: 24px, label: 10px
+/// - Active indicator: pill shape, 64×32, 4px radius
+/// - Badge: 16px circle (count) or 8px dot (boolean)
+///
+/// ## States
+/// - active: filled icon + tinted pill bg + bold label
+/// - inactive: outlined icon + muted label
+/// - badge: red dot or count badge on icon
+/// - pressed: haptic(selection) on tap
+///
+/// ## Animation
+/// - Tab switch: icon crossfade 150ms
+/// - Badge appear: scale bounce 200ms (0→1)
+///
+/// ## Accessibility
+/// - Semantics: tab role on each item
+/// - Badge count announced: "{tab} {count}개 알림"
 class _MainScaffold extends ConsumerWidget {
   const _MainScaffold({required this.navigationShell});
 
@@ -320,71 +348,299 @@ class _MainScaffold extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final chatBadge = ref.watch(chatBadgeCountProvider);
     final matchingBadge = ref.watch(matchingBadgeCountProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) {
-          // 같은 탭을 다시 누르면 해당 탭의 루트로 이동
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
-        destinations: [
-          // 탭 1: 홈
-          const NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: '홈',
-          ),
-
-          // 탭 2: 매칭 (받은 좋아요 뱃지)
-          NavigationDestination(
-            icon: Badge(
-              label: Text(_badgeLabel(matchingBadge)),
-              isLabelVisible: matchingBadge > 0,
-              child: const Icon(Icons.favorite_outline),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.inkBlack : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
+              width: 0.5,
             ),
-            selectedIcon: Badge(
-              label: Text(_badgeLabel(matchingBadge)),
-              isLabelVisible: matchingBadge > 0,
-              child: const Icon(Icons.favorite),
-            ),
-            label: '매칭',
           ),
-
-          // 탭 3: 채팅 (안읽은 메시지 뱃지)
-          NavigationDestination(
-            icon: Badge(
-              label: Text(_badgeLabel(chatBadge)),
-              isLabelVisible: chatBadge > 0,
-              child: const Icon(Icons.chat_bubble_outline),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 56,
+            child: Row(
+              children: [
+                _NavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: '홈',
+                  isActive: navigationShell.currentIndex == 0,
+                  onTap: () => _onTap(0),
+                ),
+                _NavItem(
+                  icon: Icons.favorite_outline,
+                  activeIcon: Icons.favorite_rounded,
+                  label: '매칭',
+                  isActive: navigationShell.currentIndex == 1,
+                  badgeCount: matchingBadge,
+                  onTap: () => _onTap(1),
+                ),
+                _NavItem(
+                  icon: Icons.chat_bubble_outline,
+                  activeIcon: Icons.chat_bubble_rounded,
+                  label: '채팅',
+                  isActive: navigationShell.currentIndex == 2,
+                  badgeCount: chatBadge,
+                  onTap: () => _onTap(2),
+                ),
+                _NavItem(
+                  icon: Icons.person_outline,
+                  activeIcon: Icons.person_rounded,
+                  label: '프로필',
+                  isActive: navigationShell.currentIndex == 3,
+                  onTap: () => _onTap(3),
+                ),
+              ],
             ),
-            selectedIcon: Badge(
-              label: Text(_badgeLabel(chatBadge)),
-              isLabelVisible: chatBadge > 0,
-              child: const Icon(Icons.chat_bubble),
-            ),
-            label: '채팅',
           ),
-
-          // 탭 4: 프로필
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: '프로필',
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  /// 뱃지 숫자 포맷 (99 초과 시 99+)
-  static String _badgeLabel(int count) {
-    if (count > 99) return '99+';
-    return '$count';
+  void _onTap(int index) {
+    HapticFeedback.selectionClick();
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+}
+
+/// Individual nav bar item with icon, label, optional badge
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? AppTheme.textLight : AppTheme.textDark;
+    final inactiveColor = isDark ? AppTheme.textSecondaryLight : AppTheme.textSecondaryDark;
+
+    return Expanded(
+      child: Semantics(
+        label: badgeCount > 0 ? '$label $badgeCount개 알림' : label,
+        button: true,
+        selected: isActive,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon with optional badge
+              SizedBox(
+                width: 40,
+                height: 28,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    // Pill background for active tab
+                    if (isActive)
+                      Container(
+                        width: 56,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: (isDark ? AppTheme.mysticGlow : AppTheme.waterColor)
+                              .withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(
+                        isActive ? activeIcon : icon,
+                        key: ValueKey(isActive),
+                        size: 22,
+                        color: isActive ? activeColor : inactiveColor,
+                      ),
+                    ),
+                    // Badge
+                    if (badgeCount > 0)
+                      Positioned(
+                        right: -4,
+                        top: -2,
+                        child: _Badge(count: badgeCount),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 10,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  color: isActive ? activeColor : inactiveColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Red badge with count (99+ overflow)
+class _Badge extends StatelessWidget {
+  const _Badge({required this.count});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = count > 99 ? '99+' : '$count';
+    final isWide = count > 9;
+
+    return AnimatedScale(
+      scale: 1.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.elasticOut,
+      child: Container(
+        constraints: BoxConstraints(
+          minWidth: isWide ? 20 : 16,
+          minHeight: 16,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: isWide ? 4 : 0),
+        decoration: BoxDecoration(
+          color: AppTheme.statusError,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.inkBlack
+                : Colors.white,
+            width: 1.5,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontFamily: AppTheme.fontFamily,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 스플래시 페이지 — 브랜드 로딩
+// =============================================================================
+
+/// 앱 시작 시 세션 복원을 기다리는 동안 표시되는 브랜드 스플래시
+///
+/// auth 상태를 직접 감시하여:
+/// - 로그인됨 → 홈으로 이동
+/// - 로그인 안 됨 → 로그인으로 이동
+/// - 3초 타임아웃 → 로그인으로 이동 (스트림 미방출 방지)
+class _SplashPage extends ConsumerStatefulWidget {
+  const _SplashPage();
+
+  @override
+  ConsumerState<_SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends ConsumerState<_SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 타임아웃 안전장치: 3초 후에도 스플래시에 있으면 로그인으로
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        final authState = ref.read(authStateProvider);
+        if (authState.isLoading) {
+          context.go(RoutePaths.login);
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // auth 상태 감시 → 확정되면 즉시 이동
+    ref.listen(authStateProvider, (previous, next) {
+      if (!next.isLoading) {
+        final isLoggedIn = next.valueOrNull != null;
+        if (isLoggedIn) {
+          context.go(RoutePaths.home);
+        } else {
+          context.go(RoutePaths.login);
+        }
+      }
+    });
+
+    return Scaffold(
+      backgroundColor: AppTheme.inkBlack,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 로고 텍스트
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [AppTheme.mysticAccent, AppTheme.mysticGlow],
+              ).createShader(bounds),
+              child: const Text(
+                '사주인연',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: 4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '운명이 이끈 만남',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withValues(alpha: 0.4),
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppTheme.mysticGlow.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

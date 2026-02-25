@@ -117,10 +117,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<UserEntity?> getProfile() async {
-    try {
-      final authId = _client.auth.currentUser?.id;
-      if (authId == null) return null;
+    final authId = _client.auth.currentUser?.id;
+    if (authId == null) return null;
 
+    try {
       final result = await _client
           .from(SupabaseTables.profiles)
           .select()
@@ -129,8 +129,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       if (result == null) return null;
       return UserModel.fromJson(result);
-    } catch (e) {
-      return null;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(
+        message: '프로필 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
+        code: 'PROFILE_FETCH_FAILED',
+        originalException: e,
+      );
     }
   }
 }

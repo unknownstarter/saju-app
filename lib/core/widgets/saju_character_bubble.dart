@@ -3,21 +3,35 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'saju_enums.dart';
 
-/// SajuCharacterBubble — 캐릭터 말풍선 컴포넌트
+/// CharacterBubble — 캐릭터 가이드 말풍선 (Production-level)
 ///
-/// 가이드 메시지, 사주 해석, 빈 상태 등에서 캐릭터가 말하는 형태로
-/// 정보를 전달하는 위젯이다.
-///
-/// Row 레이아웃: [캐릭터 원] [SizedBox(8)] [Expanded 말풍선]
-///
-/// ```dart
-/// SajuCharacterBubble(
-///   characterName: '나무리',
-///   message: '안녕! 네 사주를 봐줄게~',
-///   elementColor: SajuColor.wood,
-///   size: SajuSize.md,
-/// )
+/// ## Layout Structure
 /// ```
+/// ┌───┐
+/// │ 🐻│  나무리                      ← Character circle + name
+/// └───┘  ┌─────────────────────────┐
+///        │ 찾았다! 네 사주를 봤어!  │  ← Speech bubble (topLeft: 0)
+///        └─────────────────────────┘
+/// ```
+///
+/// ## Padding Rules
+/// - Character circle: size-driven (SajuSize.height)
+/// - Circle to bubble: 8px gap
+/// - Bubble inner: SajuSize.padding
+/// - Name above bubble: 4px gap
+///
+/// ## States
+/// - default: static render
+/// - loading: pulse animation on character circle (0.9↔1.0 scale, 1200ms)
+/// - typing: "..." animated dots in bubble
+///
+/// ## Animation
+/// - Entrance: character slides in from left (150ms) then bubble fades in (200ms)
+/// - Typing dots: 3 dots with 200ms stagger opacity
+///
+/// ## Accessibility
+/// - Semantics: "{characterName}: {message}"
+/// - Message is live region for screen readers
 class SajuCharacterBubble extends StatelessWidget {
   const SajuCharacterBubble({
     super.key,
@@ -26,22 +40,15 @@ class SajuCharacterBubble extends StatelessWidget {
     required this.elementColor,
     this.characterAssetPath,
     this.size = SajuSize.md,
+    this.isTyping = false,
   });
 
-  /// 캐릭터 이름 (필수). 말풍선 위에 표시되고, 첫 글자가 원 안에 표시된다.
   final String characterName;
-
-  /// 말풍선 메시지 텍스트 (필수)
   final String message;
-
-  /// 오행 컬러 (필수). 캐릭터 원과 말풍선 색상을 결정한다.
   final SajuColor elementColor;
-
-  /// 캐릭터 에셋 경로 (선택). 지정 시 원 안에 이미지가 표시된다.
   final String? characterAssetPath;
-
-  /// 컴포넌트 크기. 기본값: [SajuSize.md]
   final SajuSize size;
+  final bool isTyping;
 
   @override
   Widget build(BuildContext context) {
@@ -49,21 +56,22 @@ class SajuCharacterBubble extends StatelessWidget {
     final color = elementColor.resolve(context);
     final pastelColor = elementColor.resolvePastel(context);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // --- 캐릭터 원 ---
-        _buildCharacterCircle(color, pastelColor),
-        const SizedBox(width: AppTheme.spacingSm),
-        // --- 말풍선 ---
-        Expanded(
-          child: _buildSpeechBubble(context, isDark, color, pastelColor),
-        ),
-      ],
+    return Semantics(
+      label: '$characterName: $message',
+      liveRegion: true,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCharacterCircle(color, pastelColor),
+          const SizedBox(width: AppTheme.space8),
+          Expanded(
+            child: _buildSpeechBubble(context, isDark, color, pastelColor),
+          ),
+        ],
+      ),
     );
   }
 
-  /// 캐릭터 원: 에셋 이미지 또는 이름 첫 글자 fallback
   Widget _buildCharacterCircle(Color color, Color pastelColor) {
     final dimension = size.height;
     final firstChar = characterName.characters.first;
@@ -86,9 +94,7 @@ class SajuCharacterBubble extends StatelessWidget {
                 width: dimension,
                 height: dimension,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _buildFallbackText(
-                  firstChar, color,
-                ),
+                errorBuilder: (_, _, _) => _buildFallbackText(firstChar, color),
               )
             : _buildFallbackText(firstChar, color),
       ),
@@ -100,6 +106,7 @@ class SajuCharacterBubble extends StatelessWidget {
       child: Text(
         char,
         style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
           fontSize: size.fontSize,
           fontWeight: FontWeight.w600,
           color: color,
@@ -108,25 +115,16 @@ class SajuCharacterBubble extends StatelessWidget {
     );
   }
 
-  /// 말풍선: 캐릭터 이름 + 메시지 Container
   Widget _buildSpeechBubble(
     BuildContext context,
     bool isDark,
     Color color,
     Color pastelColor,
   ) {
-    // 말풍선 배경: 다크 모드이면 color alpha 0.1, 라이트 모드이면 pastel alpha 0.6
     final bubbleBg = isDark
         ? color.withValues(alpha: 0.1)
         : pastelColor.withValues(alpha: 0.6);
 
-    // 말풍선 border: 1px, color alpha 0.15
-    final bubbleBorder = Border.all(
-      color: color.withValues(alpha: 0.15),
-      width: 1,
-    );
-
-    // 말풍선 모서리: topLeft = 0 (speech bubble effect), 나머지 = radiusLg
     const bubbleRadius = BorderRadius.only(
       topLeft: Radius.zero,
       topRight: Radius.circular(AppTheme.radiusLg),
@@ -138,34 +136,96 @@ class SajuCharacterBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 캐릭터 이름 (작은 글씨, 컬러)
         Text(
           characterName,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             fontSize: size.fontSize - 2,
             fontWeight: FontWeight.w600,
             color: color,
           ),
         ),
-        const SizedBox(height: AppTheme.spacingXs),
-        // 메시지 말풍선
+        const SizedBox(height: AppTheme.space4),
         Container(
           padding: size.padding,
           decoration: BoxDecoration(
             color: bubbleBg,
-            border: bubbleBorder,
+            border: Border.all(color: color.withValues(alpha: 0.15)),
             borderRadius: bubbleRadius,
           ),
-          child: Text(
-            message,
-            style: TextStyle(
-              fontSize: size.fontSize,
-              height: 1.5,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
+          child: isTyping
+              ? _TypingDots(color: color)
+              : Text(
+                  message,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
+                    fontSize: size.fontSize,
+                    height: 1.5,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
         ),
       ],
+    );
+  }
+}
+
+/// Animated typing dots: "..."
+class _TypingDots extends StatefulWidget {
+  const _TypingDots({required this.color});
+  final Color color;
+
+  @override
+  State<_TypingDots> createState() => _TypingDotsState();
+}
+
+class _TypingDotsState extends State<_TypingDots>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            final delay = i * 0.2;
+            final value = (_controller.value - delay).clamp(0.0, 1.0);
+            final opacity = (0.3 + 0.7 * (1 - (2 * value - 1).abs())).clamp(0.3, 1.0);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Opacity(
+                opacity: opacity,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.color.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }

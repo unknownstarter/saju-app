@@ -57,14 +57,13 @@ flutter:
   assets:
     - assets/images/characters/
 
-  # TODO: 커스텀 폰트 추가 시 주석 해제
-  # fonts:
-  #   - family: Pretendard
-  #     fonts:
-  #       - asset: assets/fonts/Pretendard-Regular.otf
-  #       - asset: assets/fonts/Pretendard-Medium.otf
-  #         weight: 500
-  #       - asset: assets/fonts/Pretendard-SemiBold.otf
-  #         weight: 600
-  #       - asset: assets/fonts/Pretendard-Bold.otf
-  #         weight: 700
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700

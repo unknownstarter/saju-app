@@ -166,7 +166,9 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
     final formData = <String, dynamic>{
       'name': _nameController.text.trim(),
       'gender': _selectedGender,
-      'birthDate': _birthDate?.toIso8601String(),
+      'birthDate': _birthDate != null
+          ? '${_birthDate!.year}-${_birthDate!.month.toString().padLeft(2, '0')}-${_birthDate!.day.toString().padLeft(2, '0')}'
+          : null,
       'birthTime': _selectedSiJinIndex != null
           ? _siJinToHHmm(_selectedSiJinIndex!)
           : null,

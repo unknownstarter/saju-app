@@ -260,7 +260,7 @@ class MatchingRepositoryImpl implements MatchingRepository {
 
     return Compatibility(
       id: 'compat-$partnerId',
-      userId: 'current-user',
+      userId: 'mock-current-user',
       partnerId: partnerId,
       score: profile.compatibilityScore,
       fiveElementScore: (profile.compatibilityScore * 0.9).round(),
@@ -298,7 +298,7 @@ class MatchingRepositoryImpl implements MatchingRepository {
       Like(
         id: 'like-001',
         senderId: 'mock-user-001',
-        receiverId: 'current-user',
+        receiverId: 'mock-current-user',
         isPremium: true,
         status: LikeStatus.pending,
         sentAt: DateTime.now().subtract(const Duration(hours: 2)),
@@ -306,7 +306,7 @@ class MatchingRepositoryImpl implements MatchingRepository {
       Like(
         id: 'like-002',
         senderId: 'mock-user-002',
-        receiverId: 'current-user',
+        receiverId: 'mock-current-user',
         isPremium: false,
         status: LikeStatus.pending,
         sentAt: DateTime.now().subtract(const Duration(hours: 5)),
@@ -347,7 +347,7 @@ class MockMatchingRepository implements MatchingRepository {
 
     return Compatibility(
       id: 'compat-$partnerId',
-      userId: 'current-user',
+      userId: 'mock-current-user',
       partnerId: partnerId,
       score: profile.compatibilityScore,
       fiveElementScore: (profile.compatibilityScore * 0.9).round(),
@@ -391,7 +391,7 @@ class MockMatchingRepository implements MatchingRepository {
       Like(
         id: 'like-001',
         senderId: 'mock-user-001',
-        receiverId: 'current-user',
+        receiverId: 'mock-current-user',
         isPremium: true,
         status: LikeStatus.pending,
         sentAt: DateTime.now().subtract(const Duration(hours: 2)),
@@ -399,7 +399,7 @@ class MockMatchingRepository implements MatchingRepository {
       Like(
         id: 'like-002',
         senderId: 'mock-user-002',
-        receiverId: 'current-user',
+        receiverId: 'mock-current-user',
         isPremium: false,
         status: LikeStatus.pending,
         sentAt: DateTime.now().subtract(const Duration(hours: 5)),
