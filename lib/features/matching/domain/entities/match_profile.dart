@@ -13,6 +13,7 @@ class MatchProfile {
     this.characterAssetPath,
     required this.elementType,
     required this.compatibilityScore,
+    this.animalType,
   });
 
   /// 사용자 고유 ID
@@ -41,6 +42,9 @@ class MatchProfile {
 
   /// 궁합 점수 (0~100)
   final int compatibilityScore;
+
+  /// 동물상 타입 (관상 분석 완료 시). null이면 관상 미완료.
+  final String? animalType;
 
   @override
   bool operator ==(Object other) =>

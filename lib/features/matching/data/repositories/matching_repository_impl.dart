@@ -29,6 +29,7 @@ const _mockProfiles = <MatchProfile>[
     characterAssetPath: CharacterAssets.mulgyeoriWaterDefault,
     elementType: 'water',
     compatibilityScore: 92,
+    animalType: 'wolf',
   ),
   MatchProfile(
     userId: 'mock-user-002',
@@ -39,6 +40,7 @@ const _mockProfiles = <MatchProfile>[
     characterAssetPath: CharacterAssets.bulkkoriFireDefault,
     elementType: 'fire',
     compatibilityScore: 78,
+    animalType: 'fox',
   ),
   MatchProfile(
     userId: 'mock-user-003',
@@ -59,6 +61,7 @@ const _mockProfiles = <MatchProfile>[
     characterAssetPath: CharacterAssets.heuksuniEarthDefault,
     elementType: 'earth',
     compatibilityScore: 54,
+    animalType: 'rabbit',
   ),
   MatchProfile(
     userId: 'mock-user-005',
@@ -69,6 +72,7 @@ const _mockProfiles = <MatchProfile>[
     characterAssetPath: CharacterAssets.soedongiMetalDefault,
     elementType: 'metal',
     compatibilityScore: 45,
+    animalType: 'tiger',
   ),
   MatchProfile(
     userId: 'mock-user-006',
@@ -89,6 +93,7 @@ const _mockProfiles = <MatchProfile>[
     characterAssetPath: CharacterAssets.blackTokkiDefault,
     elementType: 'water',
     compatibilityScore: 71,
+    animalType: 'snake',
   ),
 ];
 

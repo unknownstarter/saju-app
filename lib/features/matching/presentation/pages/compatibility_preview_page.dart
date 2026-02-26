@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/domain/entities/compatibility_entity.dart';
@@ -9,6 +10,7 @@ import '../../../../core/widgets/widgets.dart';
 // NOTE: saju_provider 참조는 현재 유저의 오행 캐릭터 정보를 읽기 위한
 // presentation-level 크로스 피처 의존성입니다. 사주 분석 결과를
 // 공유 상태로 리팩토링할 때 해소 예정입니다.
+import '../../../gwansang/domain/entities/animal_type.dart';
 import '../../../saju/presentation/providers/saju_provider.dart';
 import '../../domain/entities/match_profile.dart';
 import '../providers/matching_provider.dart';
@@ -96,6 +98,11 @@ class CompatibilityPreviewPage extends ConsumerWidget {
                       return _buildResult(context, textTheme, compat);
                     },
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // --- 동물상 케미 ---
+                  _buildAnimalChemi(context, textTheme),
 
                   const SizedBox(height: 28),
 
@@ -188,6 +195,62 @@ class CompatibilityPreviewPage extends ConsumerWidget {
     return _CompatibilityResult(
       compat: compat,
       textTheme: textTheme,
+    );
+  }
+
+  /// 동물상 케미 섹션
+  ///
+  /// 파트너의 동물상이 있으면 케미 CTA를 표시한다.
+  /// - 파트너 animalType 없음 → 섹션 숨김
+  /// - 파트너 animalType 있음 (현재 유저 관상 미완료 가정) → 넛지 CTA
+  Widget _buildAnimalChemi(BuildContext context, TextTheme textTheme) {
+    final partnerAnimal = partnerProfile.animalType;
+
+    if (partnerAnimal == null) return const SizedBox.shrink();
+
+    final partnerType = AnimalType.fromString(partnerAnimal);
+
+    // 현재 유저는 관상 미완료로 가정 (provider 연동 시 분기 추가 예정)
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: context.sajuColors.bgElevated,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: AppTheme.mysticGlow.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '${partnerProfile.name}님은 ${partnerType.emoji} ${partnerType.label}',
+            style: textTheme.titleSmall?.copyWith(
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '닮은 동물상끼리 찰떡궁합!\n내 동물상을 알면 케미도 확인할 수 있어요',
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.6),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SajuButton(
+            label: '내 동물상 알아보기',
+            onPressed: () {
+              Navigator.pop(context);
+              context.go(RoutePaths.gwansangBridge);
+            },
+            variant: SajuVariant.outlined,
+            color: SajuColor.primary,
+            size: SajuSize.md,
+            leadingIcon: Icons.face_retouching_natural,
+          ),
+        ],
+      ),
     );
   }
 
