@@ -37,6 +37,9 @@ ALTER TABLE public.profiles
 CREATE INDEX IF NOT EXISTS idx_gwansang_profiles_user_id
   ON public.gwansang_profiles(user_id);
 
+CREATE INDEX IF NOT EXISTS idx_gwansang_profiles_animal_type
+  ON public.gwansang_profiles(animal_type);
+
 CREATE INDEX IF NOT EXISTS idx_profiles_animal_type
   ON public.profiles(animal_type);
 

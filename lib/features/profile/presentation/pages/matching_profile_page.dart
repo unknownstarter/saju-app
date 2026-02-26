@@ -195,7 +195,8 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
   }
 
   void _prevStep() {
-    if (_currentStep > 0) {
+    final minStep = _hasGwansangPhotos ? 1 : 0;
+    if (_currentStep > minStep) {
       _goToStep(_currentStep - 1);
     }
   }
@@ -361,7 +362,7 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
       ),
       child: Row(
         children: [
-          if (_currentStep > 0)
+          if (_currentStep > (_hasGwansangPhotos ? 1 : 0))
             GestureDetector(
               onTap: _prevStep,
               child: Container(
@@ -528,12 +529,17 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
             itemBuilder: (context, index) {
               final isRequired = index < 2;
               final isFilled = _photoSlots[index];
+              final isGwansangLocked = _hasGwansangPhotos &&
+                  index < (widget.gwansangPhotoUrls?.length ?? 0);
 
               return GestureDetector(
-                onTap: () {
-                  // TODO: 실제 이미지 피커 연결
-                  setState(() => _photoSlots[index] = !_photoSlots[index]);
-                },
+                onTap: isGwansangLocked
+                    ? null
+                    : () {
+                        // TODO: 실제 이미지 피커 연결
+                        setState(
+                            () => _photoSlots[index] = !_photoSlots[index]);
+                      },
                 child: Container(
                   decoration: BoxDecoration(
                     color: isFilled
@@ -554,28 +560,36 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            isFilled
-                                ? Icons.check_circle
-                                : Icons.add_a_photo_outlined,
+                            isGwansangLocked
+                                ? Icons.lock
+                                : isFilled
+                                    ? Icons.check_circle
+                                    : Icons.add_a_photo_outlined,
                             size: 28,
-                            color: isFilled
-                                ? AppTheme.fireColor
-                                : const Color(0xFFA0A0A0),
+                            color: isGwansangLocked
+                                ? AppTheme.woodColor
+                                : isFilled
+                                    ? AppTheme.fireColor
+                                    : const Color(0xFFA0A0A0),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            isFilled
-                                ? '추가됨'
-                                : index == 0
-                                    ? '대표 사진'
-                                    : index == 1
-                                        ? '정면 사진'
-                                        : '사진 ${index + 1}',
+                            isGwansangLocked
+                                ? '관상 사진'
+                                : isFilled
+                                    ? '추가됨'
+                                    : index == 0
+                                        ? '대표 사진'
+                                        : index == 1
+                                            ? '정면 사진'
+                                            : '사진 ${index + 1}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isFilled
-                                  ? AppTheme.fireColor
-                                  : const Color(0xFFA0A0A0),
+                              color: isGwansangLocked
+                                  ? AppTheme.woodColor
+                                  : isFilled
+                                      ? AppTheme.fireColor
+                                      : const Color(0xFFA0A0A0),
                               fontWeight: isRequired && !isFilled
                                   ? FontWeight.w600
                                   : FontWeight.w400,
@@ -585,7 +599,7 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
                       ),
 
                       // 필수 뱃지
-                      if (isRequired && !isFilled)
+                      if (isRequired && !isFilled && !isGwansangLocked)
                         Positioned(
                           top: 6,
                           left: 6,
