@@ -54,3 +54,6 @@ app.*.map.json
 
 # Temp files
 /tmp/ari-context-*.md
+
+# Git worktrees
+.worktrees/
