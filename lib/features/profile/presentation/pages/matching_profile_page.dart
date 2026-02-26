@@ -21,7 +21,11 @@ import '../providers/matching_profile_provider.dart';
 /// | 4    | 쇠동이(金) | 음주, 흡연, 연애스타일, 종교 |
 /// | 5    | 나무리(木) | 본인인증 (셀카) |
 class MatchingProfilePage extends ConsumerStatefulWidget {
-  const MatchingProfilePage({super.key});
+  const MatchingProfilePage({super.key, this.gwansangPhotoUrls});
+
+  /// 관상 분석에서 넘어온 사진 URL 목록.
+  /// null이 아니면 Step 1(사진)을 자동으로 채우고 Step 2부터 시작한다.
+  final List<String>? gwansangPhotoUrls;
 
   @override
   ConsumerState<MatchingProfilePage> createState() =>
@@ -29,8 +33,11 @@ class MatchingProfilePage extends ConsumerStatefulWidget {
 }
 
 class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
-  final _pageController = PageController();
+  late final PageController _pageController;
   int _currentStep = 0;
+
+  /// 관상 분석에서 사진이 넘어왔는지 여부
+  bool _hasGwansangPhotos = false;
 
   // -------------------------------------------------------------------------
   // Step 1: 프로필 사진
@@ -136,6 +143,25 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    final urls = widget.gwansangPhotoUrls;
+    if (urls != null && urls.isNotEmpty) {
+      _hasGwansangPhotos = true;
+      // 관상 사진으로 첫 N개 슬롯 자동 채우기
+      for (var i = 0; i < urls.length && i < _photoSlots.length; i++) {
+        _photoSlots[i] = true;
+      }
+      // Step 2(기본 정보)부터 시작
+      _currentStep = 1;
+      _pageController = PageController(initialPage: 1);
+    } else {
+      _pageController = PageController();
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _heightController.dispose();
@@ -224,12 +250,17 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
   }
 
   Future<void> _submitProfile() async {
-    // 사진 URL은 실제로는 Storage 업로드 후 URL을 받아야 하지만
-    // 현재는 placeholder URL로 처리
+    // 관상에서 넘어온 사진이 있으면 해당 URL을 사용하고,
+    // 나머지 슬롯은 placeholder URL로 처리
     final photoUrls = <String>[];
+    final gwansangUrls = widget.gwansangPhotoUrls ?? [];
     for (int i = 0; i < _photoSlots.length; i++) {
       if (_photoSlots[i]) {
-        photoUrls.add('https://placeholder.com/profile_$i.jpg');
+        if (i < gwansangUrls.length) {
+          photoUrls.add(gwansangUrls[i]);
+        } else {
+          photoUrls.add('https://placeholder.com/profile_$i.jpg');
+        }
       }
     }
 
@@ -437,10 +468,50 @@ class _MatchingProfilePageState extends ConsumerState<MatchingProfilePage> {
 
           SajuCharacterBubble(
             characterName: '불꼬리',
-            message: '첫인상이 중요해!\n멋진 사진 보여줘~',
+            message: _hasGwansangPhotos
+                ? '관상 분석 사진이 자동으로 들어갔어!\n더 추가해도 돼~'
+                : '첫인상이 중요해!\n멋진 사진 보여줘~',
             elementColor: SajuColor.fire,
             size: SajuSize.md,
           ),
+
+          // 관상 사진 자동 연동 배너
+          if (_hasGwansangPhotos) ...[
+            SajuSpacing.gap12,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: SajuSpacing.space16,
+                vertical: SajuSpacing.space12,
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.woodPastel.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                border: Border.all(
+                  color: AppTheme.woodColor.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.auto_awesome,
+                    size: 18,
+                    color: AppTheme.woodColor,
+                  ),
+                  SajuSpacing.hGap8,
+                  Expanded(
+                    child: Text(
+                      '관상 분석 사진 ${widget.gwansangPhotoUrls?.length ?? 0}장이 자동으로 추가되었어요',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: const Color(0xFF4A4F54),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           SajuSpacing.gap24,
 
           // 사진 그리드 (6슬롯, 첫 2개 필수)

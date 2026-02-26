@@ -203,7 +203,7 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
       // 7. 궁합 동물상
       _buildCompatibleAnimals(context, profile, colors),
       // 8. 액션 버튼
-      _buildActions(context),
+      _buildActions(context, profile.photoUrls),
     ];
 
     return Column(
@@ -513,13 +513,16 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
   // 8. 액션 버튼
   // ===========================================================================
 
-  Widget _buildActions(BuildContext context) {
+  Widget _buildActions(BuildContext context, List<String> photoUrls) {
     return Column(
       children: [
-        // 메인 CTA
+        // 메인 CTA — 관상 사진 URL을 매칭 프로필로 전달
         SajuButton(
           label: '운명의 인연 찾으러 가기',
-          onPressed: () => context.go(RoutePaths.matchingProfile),
+          onPressed: () => context.go(
+            RoutePaths.matchingProfile,
+            extra: photoUrls.isNotEmpty ? photoUrls : null,
+          ),
           variant: SajuVariant.filled,
           color: SajuColor.primary,
           size: SajuSize.lg,
