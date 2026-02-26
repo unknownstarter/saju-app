@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -100,6 +101,14 @@ class HomePage extends ConsumerWidget {
                   profiles: profiles,
                   ref: ref,
                 ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // ---- 관상 넛지 배너 ----
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: const _GwansangNudgeBanner(),
               ),
 
               const SizedBox(height: 32),
@@ -360,6 +369,69 @@ class _FortuneCard extends StatelessWidget {
   }
 
   String? get characterAssetPath => CharacterAssets.mulgyeoriWaterDefault;
+}
+
+// =============================================================================
+// 관상 넛지 배너
+// =============================================================================
+
+class _GwansangNudgeBanner extends StatelessWidget {
+  const _GwansangNudgeBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return GestureDetector(
+      onTap: () => context.go(RoutePaths.gwansangBridge),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.firePastel.withValues(alpha: 0.4),
+              AppTheme.waterPastel.withValues(alpha: 0.3),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          border: Border.all(
+            color: context.sajuColors.borderDefault,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text('🦊🐻', style: TextStyle(fontSize: 32)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '닮은 동물상끼리 잘 맞는대요!',
+                    style: textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '내 동물상을 알면 찰떡궁합을 찾아줄게요',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: textTheme.bodySmall?.color?.withValues(alpha: 0.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // =============================================================================
