@@ -2,20 +2,25 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/haptic_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/tokens/saju_animation.dart';
 import '../../../../core/theme/tokens/saju_spacing.dart';
 import '../../../../core/widgets/widgets.dart';
 
-/// OnboardingFormPage -- 2단계 사주 정보 온보딩 폼 (Phase A)
+/// OnboardingFormPage -- 5단계 사주 정보 온보딩 폼 (토스 스타일)
 ///
-/// 사주 분석에 필요한 기본 정보만 수집한다.
-/// 매칭에 필요한 추가 정보(사진, 자기소개, 키, 직업 등)는
-/// 사주 결과 확인 후 Phase B(MatchingProfilePage)에서 수집한다.
+/// "한 화면에 하나의 질문" 패턴으로 사주 분석에 필요한 기본 정보를 수집한다.
+/// 선택형 입력(성별, 시진)은 탭 후 0.3초 자동 진행,
+/// 텍스트형 입력(이름)은 조건부 버튼 활성화.
 ///
-/// | Step | 캐릭터 | 내용 |
-/// |------|--------|------|
-/// | 1    | 물결이(水) | 이름, 성별, 생년월일 |
-/// | 2    | 쇠동이(金) | 생시(시진) 선택 |
+/// | Step | 캐릭터 | 내용 | 진행 방식 |
+/// |------|--------|------|----------|
+/// | 0 | 물결이(水) | 이름 | 버튼 활성화 |
+/// | 1 | 물결이(水) | 성별 | 자동 진행 |
+/// | 2 | 물결이(水) | 생년월일 | 버튼 활성화 |
+/// | 3 | 쇠동이(金) | 생시(시진) | 자동 진행 |
+/// | 4 | 물결이(水) | 확인 요약 | CTA 버튼 |
 class OnboardingFormPage extends StatefulWidget {
   const OnboardingFormPage({
     super.key,
@@ -30,21 +35,32 @@ class OnboardingFormPage extends StatefulWidget {
 }
 
 class _OnboardingFormPageState extends State<OnboardingFormPage> {
+  static const _totalSteps = 5;
+
   final _pageController = PageController();
   int _currentStep = 0;
 
   // ---------------------------------------------------------------------------
-  // Step 1: 이름 / 성별 / 생년월일
+  // Step 0: 이름
   // ---------------------------------------------------------------------------
   final _nameController = TextEditingController();
   String? _nameError;
+
+  // ---------------------------------------------------------------------------
+  // Step 1: 성별
+  // ---------------------------------------------------------------------------
   String? _selectedGender;
+
+  // ---------------------------------------------------------------------------
+  // Step 2: 생년월일
+  // ---------------------------------------------------------------------------
   DateTime? _birthDate;
 
   // ---------------------------------------------------------------------------
-  // Step 2: 생시(시진) 선택
+  // Step 3: 생시(시진) 선택
   // ---------------------------------------------------------------------------
   int? _selectedSiJinIndex; // 0~11 (자시~해시), null = 모르겠어요
+  bool _siJinIsUnknown = false;
 
   // ---------------------------------------------------------------------------
   // 12시진 데이터
@@ -67,18 +83,8 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
   /// 시진 index → HH:mm 대표 시각 변환
   static String _siJinToHHmm(int index) {
     const times = [
-      '00:00', // 0: 자시
-      '02:00', // 1: 축시
-      '04:00', // 2: 인시
-      '06:00', // 3: 묘시
-      '08:00', // 4: 진시
-      '10:00', // 5: 사시
-      '12:00', // 6: 오시
-      '14:00', // 7: 미시
-      '16:00', // 8: 신시
-      '18:00', // 9: 유시
-      '20:00', // 10: 술시
-      '22:00', // 11: 해시
+      '00:00', '02:00', '04:00', '06:00', '08:00', '10:00',
+      '12:00', '14:00', '16:00', '18:00', '20:00', '22:00',
     ];
     return times[index];
   }
@@ -93,9 +99,24 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
       color: SajuColor.water,
     ),
     _StepCharacter(
+      name: '물결이',
+      asset: CharacterAssets.mulgyeoriWaterDefault,
+      color: SajuColor.water,
+    ),
+    _StepCharacter(
+      name: '물결이',
+      asset: CharacterAssets.mulgyeoriWaterDefault,
+      color: SajuColor.water,
+    ),
+    _StepCharacter(
       name: '쇠동이',
       asset: CharacterAssets.soedongiMetalDefault,
       color: SajuColor.metal,
+    ),
+    _StepCharacter(
+      name: '물결이',
+      asset: CharacterAssets.mulgyeoriWaterDefault,
+      color: SajuColor.water,
     ),
   ];
 
@@ -122,9 +143,10 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
   void _nextStep() {
     if (!_validateCurrentStep()) return;
 
-    if (_currentStep < 1) {
+    if (_currentStep < _totalSteps - 1) {
       _goToStep(_currentStep + 1);
     } else {
+      HapticService.medium();
       _submitForm();
     }
   }
@@ -137,31 +159,34 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
 
   bool _validateCurrentStep() {
     switch (_currentStep) {
-      case 0:
+      case 0: // 이름
         final name = _nameController.text.trim();
         if (name.length < 2) {
-          setState(() => _nameError = '이름은 2자 이상 입력해주세요');
-          return false;
-        }
-        if (_selectedGender == null) {
-          _showSnack('성별을 선택해주세요');
-          return false;
-        }
-        if (_birthDate == null) {
-          _showSnack('생년월일을 선택해주세요');
+          setState(() => _nameError = '이름은 2자 이상이어야 해요');
           return false;
         }
         setState(() => _nameError = null);
         return true;
-
-      case 1:
-        // 시진은 "모르겠어요"도 허용하므로 항상 통과
+      case 1: // 성별 — 자동 진행이므로 선택 여부만
+        return _selectedGender != null;
+      case 2: // 생년월일
+        return _birthDate != null;
+      case 3: // 시진 — 모르겠어요 허용이므로 항상 통과
         return true;
-
+      case 4: // 확인 — 항상 통과
+        return true;
       default:
         return true;
     }
   }
+
+  /// 현재 스텝의 입력이 유효한지 (하단 버튼 활성화 조건)
+  bool get _isCurrentStepValid => switch (_currentStep) {
+    0 => _nameController.text.trim().length >= 2,
+    2 => _birthDate != null,
+    4 => true,
+    _ => true,
+  };
 
   void _submitForm() {
     final formData = <String, dynamic>{
@@ -178,82 +203,16 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
     widget.onComplete(formData);
   }
 
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   // ---------------------------------------------------------------------------
-  // 생년월일 피커
+  // 자동 진행 헬퍼 (선택형 입력)
   // ---------------------------------------------------------------------------
 
-  Future<void> _showBirthDatePicker() async {
-    final now = DateTime.now();
-
-    // iOS 스타일 date picker를 바텀시트로 표시
-    DateTime tempDate = _birthDate ?? DateTime(2000, 1, 1);
-
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (ctx) {
-        return Container(
-          height: 300,
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppTheme.radiusXl),
-            ),
-          ),
-          child: Column(
-            children: [
-              // 상단 바
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: SajuSpacing.space16,
-                  vertical: SajuSpacing.space8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('취소'),
-                    ),
-                    Text(
-                      '생년월일',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() => _birthDate = tempDate);
-                        Navigator.pop(ctx);
-                      },
-                      child: const Text('확인'),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              // 날짜 피커
-              Expanded(
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.date,
-                  initialDateTime: tempDate,
-                  minimumDate: DateTime(1940, 1, 1),
-                  maximumDate: DateTime(now.year - 18, now.month, now.day),
-                  onDateTimeChanged: (date) => tempDate = date,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _autoAdvance() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      HapticService.light();
+      _goToStep(_currentStep + 1);
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -267,12 +226,12 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // --- 상단: 뒤로가기 + 프로그레스 바 ---
+            // --- 상단: 뒤로가기 ---
             _buildTopBar(),
             SajuSpacing.gap8,
 
-            // --- 캐릭터 프로그레스 인디케이터 ---
-            _buildCharacterProgress(),
+            // --- 프로그레스 바 ---
+            _buildProgressBar(),
             SajuSpacing.gap16,
 
             // --- 스텝 콘텐츠 ---
@@ -281,8 +240,11 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _buildStep1(),
-                  _buildStep2(),
+                  _buildStepName(),
+                  _buildStepGender(),
+                  _buildStepBirthDate(),
+                  _buildStepSiJin(),
+                  _buildStepConfirm(),
                 ],
               ),
             ),
@@ -296,7 +258,7 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // 상단 바 (뒤로가기 + 스텝 표시)
+  // 상단 바 (뒤로가기 + 스텝 카운터)
   // ---------------------------------------------------------------------------
 
   Widget _buildTopBar() {
@@ -334,13 +296,6 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
           else
             const SizedBox(width: 40),
           const Spacer(),
-          Text(
-            '${_currentStep + 1} / 2',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: const Color(0xFF6B6B6B),
-                ),
-          ),
-          const Spacer(),
           const SizedBox(width: 40),
         ],
       ),
@@ -348,128 +303,94 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // 캐릭터 프로그레스 인디케이터
+  // 리니어 프로그레스 바
   // ---------------------------------------------------------------------------
 
-  Widget _buildCharacterProgress() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space32),
-      child: Row(
-        children: List.generate(2, (index) {
-          final character = _stepCharacters[index];
-          final isCompleted = index < _currentStep;
-          final isCurrent = index == _currentStep;
-          final color = character.color.resolve(context);
-          final pastel = character.color.resolvePastel(context);
+  Widget _buildProgressBar() {
+    final progress = (_currentStep + 1) / _totalSteps;
+    final currentColor = _stepCharacters[_currentStep].color.resolve(context);
 
-          return Expanded(
-            child: Row(
-              children: [
-                // 캐릭터 아이콘
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isCompleted || isCurrent ? pastel : const Color(0xFFE8E4DF),
-                    border: Border.all(
-                      color: isCurrent
-                          ? color
-                          : isCompleted
-                              ? color.withValues(alpha: 0.5)
-                              : const Color(0xFFD0CCC7),
-                      width: isCurrent ? 2.5 : 1.5,
-                    ),
-                  ),
-                  child: Center(
-                    child: isCompleted
-                        ? Icon(Icons.check, size: 18, color: color)
-                        : Image.asset(
-                            character.asset,
-                            width: 22,
-                            height: 22,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => Text(
-                              character.name.characters.first,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: isCurrent
-                                    ? color
-                                    : const Color(0xFFA0A0A0),
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-                // 연결선 (마지막 아이템 제외)
-                if (index < 1)
-                  Expanded(
-                    child: Container(
-                      height: 2,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(1),
-                        color: isCompleted
-                            ? color.withValues(alpha: 0.4)
-                            : const Color(0xFFE0DCD7),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        }),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: progress),
+          duration: SajuAnimation.slow,
+          curve: SajuAnimation.entrance,
+          builder: (context, value, _) => LinearProgressIndicator(
+            value: value,
+            backgroundColor: const Color(0xFFE8E4DF),
+            valueColor: AlwaysStoppedAnimation<Color>(currentColor),
+            minHeight: 4,
+          ),
+        ),
       ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1: 이름 / 성별 / 생년월일
+  // Step 0: 이름 (auto-focus, 버튼 활성화)
   // ---------------------------------------------------------------------------
 
-  Widget _buildStep1() {
+  Widget _buildStepName() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SajuSpacing.gap8,
-
-          // 캐릭터 가이드 말풍선
           SajuCharacterBubble(
             characterName: '물결이',
-            message: '먼저 너에 대해 알려줘!',
+            message: '반가워! 이름이 뭐야~?',
             elementColor: SajuColor.water,
+            characterAssetPath: CharacterAssets.mulgyeoriWaterDefault,
             size: SajuSize.md,
           ),
           SajuSpacing.gap32,
-
-          // 이름 입력
           SajuInput(
             label: '이름',
             hint: '이름을 입력해주세요',
             controller: _nameController,
             errorText: _nameError,
-            onChanged: (_) {
-              if (_nameError != null) {
-                setState(() => _nameError = null);
-              }
-            },
+            autofocus: true,
             maxLength: 20,
             size: SajuSize.lg,
+            onChanged: (_) {
+              if (_nameError != null) setState(() => _nameError = null);
+              setState(() {}); // 버튼 활성화 갱신
+            },
+            onSubmitted: (_) {
+              if (_isCurrentStepValid) _nextStep();
+            },
           ),
-          SajuSpacing.gap24,
+        ],
+      ),
+    );
+  }
 
-          // 성별 선택
-          Text(
-            '성별',
-            style: TextStyle(
-              fontSize: SajuSize.lg.fontSize * 0.9,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+  // ---------------------------------------------------------------------------
+  // Step 1: 성별 (자동 진행)
+  // ---------------------------------------------------------------------------
+
+  Widget _buildStepGender() {
+    final name = _nameController.text.trim();
+    final displayName = name.isNotEmpty ? '$name님' : '너';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           SajuSpacing.gap8,
+          SajuCharacterBubble(
+            characterName: '물결이',
+            message: '$displayName, 성별을 알려줘!',
+            elementColor: SajuColor.water,
+            characterAssetPath: CharacterAssets.mulgyeoriWaterDefault,
+            size: SajuSize.md,
+          ),
+          const SizedBox(height: SajuSpacing.space48),
           Row(
             children: [
               Expanded(
@@ -478,99 +399,106 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
                   color: SajuColor.water,
                   isSelected: _selectedGender == '남성',
                   size: SajuSize.lg,
-                  onTap: () => setState(() => _selectedGender = '남성'),
+                  onTap: () => _selectGender('남성'),
                 ),
               ),
-              SajuSpacing.hGap8,
+              SajuSpacing.hGap16,
               Expanded(
                 child: SajuChip(
                   label: '여성',
                   color: SajuColor.fire,
                   isSelected: _selectedGender == '여성',
                   size: SajuSize.lg,
-                  onTap: () => setState(() => _selectedGender = '여성'),
+                  onTap: () => _selectGender('여성'),
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  void _selectGender(String gender) {
+    setState(() => _selectedGender = gender);
+    HapticService.selection();
+    _autoAdvance();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 2: 생년월일 (인라인 피커)
+  // ---------------------------------------------------------------------------
+
+  Widget _buildStepBirthDate() {
+    final now = DateTime.now();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SajuSpacing.gap8,
+          SajuCharacterBubble(
+            characterName: '물결이',
+            message: '태어난 날짜를 알려줘~',
+            elementColor: SajuColor.water,
+            characterAssetPath: CharacterAssets.mulgyeoriWaterDefault,
+            size: SajuSize.md,
+          ),
           SajuSpacing.gap24,
 
-          // 생년월일
-          Text(
-            '생년월일',
-            style: TextStyle(
-              fontSize: SajuSize.lg.fontSize * 0.9,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SajuSpacing.gap8,
-          GestureDetector(
-            onTap: _showBirthDatePicker,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0EDE8),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                border: _birthDate != null
-                    ? Border.all(
-                        color: AppTheme.waterColor.withValues(alpha: 0.4),
-                        width: 1,
-                      )
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _birthDate != null
-                          ? '${_birthDate!.year}년 ${_birthDate!.month}월 ${_birthDate!.day}일'
-                          : '생년월일을 선택해주세요',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: _birthDate != null
-                            ? const Color(0xFF2D2D2D)
-                            : const Color(0xFFA0A0A0),
-                      ),
-                    ),
+          // 선택된 날짜 미리보기
+          if (_birthDate != null)
+            Center(
+              child: AnimatedSwitcher(
+                duration: SajuAnimation.normal,
+                child: Text(
+                  '${_birthDate!.year}년 ${_birthDate!.month}월 ${_birthDate!.day}일',
+                  key: ValueKey(_birthDate),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.waterColor,
                   ),
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: 20,
-                    color: _birthDate != null
-                        ? AppTheme.waterColor
-                        : const Color(0xFFA0A0A0),
-                  ),
-                ],
+                ),
               ),
             ),
+
+          SajuSpacing.gap16,
+
+          // 인라인 CupertinoDatePicker
+          Expanded(
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.date,
+              initialDateTime: _birthDate ?? DateTime(2000, 1, 1),
+              minimumDate: DateTime(1940, 1, 1),
+              maximumDate: DateTime(now.year - 18, now.month, now.day),
+              onDateTimeChanged: (date) {
+                setState(() => _birthDate = date);
+                HapticService.selection();
+              },
+            ),
           ),
-          SajuSpacing.gap32,
         ],
       ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Step 2: 생시(시진) 선택
+  // Step 3: 시진 선택 (자동 진행)
   // ---------------------------------------------------------------------------
 
-  Widget _buildStep2() {
+  Widget _buildStepSiJin() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SajuSpacing.gap8,
-
-          // 캐릭터 가이드 말풍선
           SajuCharacterBubble(
             characterName: '쇠동이',
             message: '태어난 시간까지 알면 더 정확해져!\n몰라도 괜찮아~',
             elementColor: SajuColor.metal,
+            characterAssetPath: CharacterAssets.soedongiMetalDefault,
             size: SajuSize.md,
           ),
           SajuSpacing.gap24,
@@ -588,22 +516,19 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
             itemCount: _siJinList.length,
             itemBuilder: (context, index) {
               final siJin = _siJinList[index];
-              final isSelected = _selectedSiJinIndex == index;
+              final isSelected =
+                  _selectedSiJinIndex == index && !_siJinIsUnknown;
 
               return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedSiJinIndex =
-                        _selectedSiJinIndex == index ? null : index;
-                  });
-                },
+                onTap: () => _selectSiJin(index),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: SajuAnimation.normal,
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppTheme.metalColor.withValues(alpha: 0.12)
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusMd),
                     border: Border.all(
                       color: isSelected
                           ? AppTheme.metalColor
@@ -613,7 +538,8 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: AppTheme.metalColor.withValues(alpha: 0.15),
+                              color: AppTheme.metalColor
+                                  .withValues(alpha: 0.15),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -627,8 +553,9 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
                         '${siJin.name} ${siJin.hanja}',
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           color: isSelected
                               ? AppTheme.metalColor
                               : const Color(0xFF4A4F54),
@@ -657,12 +584,10 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
             child: SajuChip(
               label: '모르겠어요',
               color: SajuColor.metal,
-              isSelected: _selectedSiJinIndex == null,
+              isSelected: _siJinIsUnknown,
               size: SajuSize.md,
               leadingIcon: Icons.help_outline,
-              onTap: () {
-                setState(() => _selectedSiJinIndex = null);
-              },
+              onTap: _selectSiJinUnknown,
             ),
           ),
           SajuSpacing.gap16,
@@ -701,12 +626,147 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
     );
   }
 
+  void _selectSiJin(int index) {
+    setState(() {
+      _selectedSiJinIndex = index;
+      _siJinIsUnknown = false;
+    });
+    HapticService.selection();
+    _autoAdvance();
+  }
+
+  void _selectSiJinUnknown() {
+    setState(() {
+      _selectedSiJinIndex = null;
+      _siJinIsUnknown = true;
+    });
+    HapticService.selection();
+    _autoAdvance();
+  }
+
   // ---------------------------------------------------------------------------
-  // 하단 버튼
+  // Step 4: 입력 확인 요약
+  // ---------------------------------------------------------------------------
+
+  Widget _buildStepConfirm() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SajuSpacing.gap8,
+          SajuCharacterBubble(
+            characterName: '물결이',
+            message: '좋아! 이제 사주를 분석해볼까?',
+            elementColor: SajuColor.water,
+            characterAssetPath: CharacterAssets.mulgyeoriWaterDefault,
+            size: SajuSize.md,
+          ),
+          SajuSpacing.gap32,
+          _buildSummaryCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard() {
+    return Container(
+      padding: const EdgeInsets.all(SajuSpacing.space20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: const Color(0xFFE0DCD7)),
+      ),
+      child: Column(
+        children: [
+          _summaryRow(
+            Icons.person,
+            '이름',
+            _nameController.text.trim(),
+            0,
+          ),
+          const Divider(height: 24),
+          _summaryRow(
+            Icons.wc,
+            '성별',
+            _selectedGender ?? '',
+            1,
+          ),
+          const Divider(height: 24),
+          _summaryRow(
+            Icons.cake,
+            '생년월일',
+            _birthDate != null
+                ? '${_birthDate!.year}년 ${_birthDate!.month}월 ${_birthDate!.day}일'
+                : '',
+            2,
+          ),
+          const Divider(height: 24),
+          _summaryRow(
+            Icons.access_time,
+            '생시',
+            _selectedSiJinIndex != null
+                ? '${_siJinList[_selectedSiJinIndex!].name} (${_siJinList[_selectedSiJinIndex!].timeRange})'
+                : '모르겠어요',
+            3,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(
+    IconData icon,
+    String label,
+    String value,
+    int stepIndex,
+  ) {
+    return GestureDetector(
+      onTap: () => _goToStep(stepIndex),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppTheme.waterColor),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: const Color(0xFF6B6B6B),
+            ),
+          ),
+          const Spacer(),
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            Icons.edit_outlined,
+            size: 14,
+            color: const Color(0xFFA0A0A0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 하단 버튼 — 자동 진행 스텝에서는 숨김
   // ---------------------------------------------------------------------------
 
   Widget _buildBottomButtons() {
-    final isLastStep = _currentStep == 1;
+    // 성별(1), 시진(3) 스텝은 자동 진행이므로 하단 버튼 숨김
+    final isAutoAdvanceStep = _currentStep == 1 || _currentStep == 3;
+    if (isAutoAdvanceStep) return const SizedBox(height: SajuSpacing.space16);
+
+    final isLastStep = _currentStep == _totalSteps - 1;
+    final isValid = _isCurrentStepValid;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(
@@ -727,7 +787,7 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
       ),
       child: SajuButton(
         label: isLastStep ? '사주 분석하기' : '다음',
-        onPressed: _nextStep,
+        onPressed: isValid ? _nextStep : null,
         color: _stepCharacters[_currentStep].color,
         size: SajuSize.xl,
         leadingIcon: isLastStep ? Icons.auto_awesome : null,
@@ -765,4 +825,3 @@ class _StepCharacter {
   final String asset;
   final SajuColor color;
 }
-

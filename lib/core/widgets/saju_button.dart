@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/tokens/saju_animation.dart';
 import 'saju_enums.dart';
 
 /// SajuButton — 사주 디자인 시스템 버튼 컴포넌트
@@ -177,6 +178,9 @@ class SajuButton extends StatelessWidget {
         return ElevatedButton.styleFrom(
           backgroundColor: resolvedColor,
           foregroundColor: foreground,
+          disabledBackgroundColor:
+              resolvedColor.withValues(alpha: SajuAnimation.disabledOpacity),
+          disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
           minimumSize: minimumSize,
           padding: size.padding,
           shape: shape,
@@ -187,6 +191,8 @@ class SajuButton extends StatelessWidget {
       case SajuVariant.outlined:
         return OutlinedButton.styleFrom(
           foregroundColor: foreground,
+          disabledForegroundColor:
+              resolvedColor.withValues(alpha: SajuAnimation.disabledOpacity),
           minimumSize: minimumSize,
           padding: size.padding,
           shape: shape.copyWith(
@@ -199,6 +205,8 @@ class SajuButton extends StatelessWidget {
       case SajuVariant.flat:
         return TextButton.styleFrom(
           foregroundColor: foreground,
+          disabledForegroundColor:
+              resolvedColor.withValues(alpha: SajuAnimation.disabledOpacity),
           minimumSize: minimumSize,
           padding: size.padding,
           shape: shape,
@@ -210,6 +218,10 @@ class SajuButton extends StatelessWidget {
         return ElevatedButton.styleFrom(
           backgroundColor: surfaceColor,
           foregroundColor: foreground,
+          disabledBackgroundColor:
+              surfaceColor.withValues(alpha: SajuAnimation.disabledOpacity),
+          disabledForegroundColor:
+              foreground.withValues(alpha: SajuAnimation.disabledOpacity),
           minimumSize: minimumSize,
           padding: size.padding,
           shape: shape,
@@ -221,6 +233,8 @@ class SajuButton extends StatelessWidget {
       case SajuVariant.ghost:
         return TextButton.styleFrom(
           foregroundColor: foreground,
+          disabledForegroundColor:
+              foreground.withValues(alpha: SajuAnimation.disabledOpacity),
           minimumSize: minimumSize,
           padding: size.padding,
           shape: shape,

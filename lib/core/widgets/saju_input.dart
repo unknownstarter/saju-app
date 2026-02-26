@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/haptic_service.dart';
 import '../theme/tokens/saju_spacing.dart';
 import 'saju_enums.dart';
 
@@ -8,6 +9,9 @@ import 'saju_enums.dart';
 ///
 /// 한지 팔레트 디자인 시스템에 맞춰 스타일링된 텍스트 입력 필드.
 /// 라벨 + TextField의 Column 레이아웃으로 구성된다.
+///
+/// errorText가 null → non-null로 바뀔 때 필드가 좌우 흔들림(shake) +
+/// 햅틱 피드백을 제공한다.
 ///
 /// ```dart
 /// SajuInput(
@@ -19,7 +23,7 @@ import 'saju_enums.dart';
 ///   size: SajuSize.md,
 /// )
 /// ```
-class SajuInput extends StatelessWidget {
+class SajuInput extends StatefulWidget {
   const SajuInput({
     super.key,
     required this.label,
@@ -89,6 +93,48 @@ class SajuInput extends StatelessWidget {
   final SajuSize size;
 
   @override
+  State<SajuInput> createState() => _SajuInputState();
+}
+
+class _SajuInputState extends State<SajuInput>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shakeController;
+  late final Animation<double> _shakeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0, end: -6), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -6, end: 6), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 6, end: -4), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -4, end: 0), weight: 1),
+    ]).animate(CurvedAnimation(
+      parent: _shakeController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void didUpdateWidget(covariant SajuInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.errorText != null && oldWidget.errorText == null) {
+      _shakeController.forward(from: 0);
+      HapticService.error();
+    }
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,32 +142,39 @@ class SajuInput extends StatelessWidget {
       children: [
         // 라벨
         Text(
-          label,
+          widget.label,
           style: TextStyle(
-            fontSize: size.fontSize * 0.9,
+            fontSize: widget.size.fontSize * 0.9,
             fontWeight: FontWeight.w600,
           ),
         ),
         SajuSpacing.gap8,
-        // 입력 필드
-        TextField(
-          controller: controller,
-          onChanged: onChanged,
-          onSubmitted: onSubmitted,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          maxLines: maxLines,
-          maxLength: maxLength,
-          inputFormatters: inputFormatters,
-          enabled: enabled,
-          autofocus: autofocus,
-          style: TextStyle(fontSize: size.fontSize),
-          decoration: InputDecoration(
-            hintText: hint,
-            errorText: errorText,
-            prefixIcon: prefixIcon,
-            suffixIcon: suffixIcon,
-            counterText: '',
+        // 입력 필드 (shake 래핑)
+        AnimatedBuilder(
+          animation: _shakeAnimation,
+          builder: (context, child) => Transform.translate(
+            offset: Offset(_shakeAnimation.value, 0),
+            child: child,
+          ),
+          child: TextField(
+            controller: widget.controller,
+            onChanged: widget.onChanged,
+            onSubmitted: widget.onSubmitted,
+            keyboardType: widget.keyboardType,
+            obscureText: widget.obscureText,
+            maxLines: widget.maxLines,
+            maxLength: widget.maxLength,
+            inputFormatters: widget.inputFormatters,
+            enabled: widget.enabled,
+            autofocus: widget.autofocus,
+            style: TextStyle(fontSize: widget.size.fontSize),
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              errorText: widget.errorText,
+              prefixIcon: widget.prefixIcon,
+              suffixIcon: widget.suffixIcon,
+              counterText: '',
+            ),
           ),
         ),
       ],

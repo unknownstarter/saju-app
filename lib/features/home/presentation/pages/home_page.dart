@@ -16,6 +16,7 @@ import '../../../matching/presentation/providers/matching_provider.dart';
 ///
 /// 타이포그래피 위계로 구조를 잡고, 여백으로 호흡을 주는 깔끔한 레이아웃.
 /// 아이콘/장식 최소화, 핵심 정보만 노출.
+/// 각 섹션은 스태거드 fadeIn + slideUp으로 등장한다.
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
@@ -34,127 +35,154 @@ class HomePage extends ConsumerWidget {
               const SizedBox(height: 20),
 
               // ---- 1. 인사 + 캐릭터 ----
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '오늘의 인연을\n만나봐요',
-                            style: textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              height: 1.3,
+              _FadeSlideSection(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '오늘의 인연을\n만나봐요',
+                              style: textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                height: 1.3,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '사주가 이끄는 운명적 만남',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: textTheme.bodySmall?.color,
+                            const SizedBox(height: 6),
+                            Text(
+                              '사주가 이끄는 운명적 만남',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: textTheme.bodySmall?.color,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    // 나무리 캐릭터 — 은은하게
-                    Image.asset(
-                      CharacterAssets.namuriWoodDefault,
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
-                  ],
+                      // 나무리 캐릭터 — 은은하게
+                      Image.asset(
+                        CharacterAssets.namuriWoodDefault,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 32),
 
               // ---- 2. 오늘의 추천 ----
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  '오늘의 추천',
-                  style: textTheme.titleLarge,
-                ),
-              ),
-              const SizedBox(height: 14),
-              recommendations.when(
-                loading: () => const SizedBox(
-                  height: 260,
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-                error: (_, _) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _EmptyState(
-                    message: '추천을 불러오지 못했어요',
-                    height: 200,
-                  ),
-                ),
-                data: (profiles) => _RecommendationList(
-                  profiles: profiles,
-                  ref: ref,
+              _FadeSlideSection(
+                delay: const Duration(milliseconds: 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        '오늘의 추천',
+                        style: textTheme.titleLarge,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    recommendations.when(
+                      loading: () => SizedBox(
+                        height: 260,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: 3,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(width: 12),
+                          itemBuilder: (_, _) => const SkeletonCard(),
+                        ),
+                      ),
+                      error: (_, _) => Padding(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 20),
+                        child: _EmptyState(
+                          message: '추천을 불러오지 못했어요',
+                          height: 200,
+                        ),
+                      ),
+                      data: (profiles) => _RecommendationList(
+                        profiles: profiles,
+                        ref: ref,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 32),
 
               // ---- 관상 넛지 배너 ----
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: const _GwansangNudgeBanner(),
+              _FadeSlideSection(
+                delay: const Duration(milliseconds: 200),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const _GwansangNudgeBanner(),
+                ),
               ),
 
               const SizedBox(height: 32),
 
               // ---- 3. 받은 좋아요 ----
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '받은 좋아요',
-                      style: textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 14),
-                    receivedLikes.when(
-                      loading: () => const SizedBox(
-                        height: 64,
-                        child: Center(
-                          child:
-                              CircularProgressIndicator(strokeWidth: 2),
-                        ),
+              _FadeSlideSection(
+                delay: const Duration(milliseconds: 300),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '받은 좋아요',
+                        style: textTheme.titleLarge,
                       ),
-                      error: (_, _) => const SizedBox.shrink(),
-                      data: (likes) =>
-                          _ReceivedLikesCard(count: likes.length),
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      receivedLikes.when(
+                        loading: () => Container(
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0EDE8),
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusLg),
+                          ),
+                        ),
+                        error: (_, _) => const SizedBox.shrink(),
+                        data: (likes) =>
+                            _ReceivedLikesCard(count: likes.length),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 32),
 
               // ---- 4. 오늘의 한마디 ----
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '오늘의 한마디',
-                      style: textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 14),
-                    const _FortuneCard(),
-                  ],
+              _FadeSlideSection(
+                delay: const Duration(milliseconds: 400),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '오늘의 한마디',
+                        style: textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 14),
+                      const _FortuneCard(),
+                    ],
+                  ),
                 ),
               ),
 
@@ -429,6 +457,65 @@ class _GwansangNudgeBanner extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 섹션 등장 애니메이션 (fadeIn + slideUp)
+// =============================================================================
+
+class _FadeSlideSection extends StatefulWidget {
+  const _FadeSlideSection({required this.child, this.delay = Duration.zero});
+  final Widget child;
+  final Duration delay;
+
+  @override
+  State<_FadeSlideSection> createState() => _FadeSlideState();
+}
+
+class _FadeSlideState extends State<_FadeSlideSection>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _fade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    Future.delayed(widget.delay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(
+        position: _slide,
+        child: widget.child,
       ),
     );
   }

@@ -23,3 +23,4 @@ export 'saju_error_state.dart';
 export 'compatibility_card.dart';
 export 'like_button.dart';
 export 'premium_like_button.dart';
+export 'skeleton_card.dart';
