@@ -75,6 +75,21 @@
 | R8 | **관상 브릿지 스킵** → 홈으로 | `03513f6` | ✅ |
 | R9 | **통합 검증** flutter analyze 0 errors | — | ✅ |
 
+#### 토스 스타일 UX 리팩토링 (2026-02-26)
+
+> **핵심**: "양식 작성" → "대화형 한 화면 하나" 패턴. 햅틱 피드백, 버튼 활성화, shake 에러, 스켈레톤 로딩.
+> **설계**: `docs/plans/2026-02-26-toss-ux-refactoring-design.md`
+> **구현 계획**: `docs/plans/2026-02-26-toss-ux-implementation.md`
+
+| # | Task | 커밋 | 상태 |
+|---|------|------|------|
+| U1 | **HapticService** 글로벌 햅틱 피드백 서비스 | `27404ad` | ✅ |
+| U2 | **SajuButton** 비활성 시각 상태 강화 (opacity 0.4) | `27404ad` | ✅ |
+| U3 | **SajuInput** 에러 시 shake 애니메이션 + 햅틱 | `27404ad` | ✅ |
+| U4 | **온보딩 폼** 2→5스텝 "한 화면 하나" (자동진행, 인라인 피커, 요약 확인) | `27404ad` | ✅ |
+| U5 | **홈 스켈레톤** SkeletonCard + 섹션 fadeIn/slideUp | `27404ad` | ✅ |
+| U6 | **통합 검증** flutter analyze 0 errors | `27404ad` | ✅ |
+
 ### 기존 (High) — 매칭·궁합 실데이터 연동
 
 | # | Task | 담당 관점 | 산출물/참고 | 상태 |
@@ -124,6 +139,8 @@
 | `docs/plans/2026-02-25-gwansang-onboarding-funnel.md` | 관상 온보딩 퍼널 설계 (PM) |
 | `docs/plans/2026-02-25-gwansang-ai-architecture.md` | 관상 기술 아키텍처 (ML Kit + Claude) |
 | `docs/plans/2026-02-25-gwansang-content-system.md` | 관상 콘텐츠 시스템 (동물상 + AI 프롬프트) |
+| `docs/plans/2026-02-26-toss-ux-refactoring-design.md` | **토스 UX 리팩토링 설계서** (3원칙 + 5스텝 온보딩) |
+| `docs/plans/2026-02-26-toss-ux-implementation.md` | **토스 UX 구현 계획** (6 Tasks) |
 | `CLAUDE.md` | 개발자룰·아키텍처·에셋·라우팅 규칙 |
 
 ---
