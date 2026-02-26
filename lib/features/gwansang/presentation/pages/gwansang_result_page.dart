@@ -516,15 +516,10 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
   Widget _buildActions(BuildContext context, List<String> photoUrls) {
     return Column(
       children: [
-        // 메인 CTA — 관상 사진 URL을 매칭 프로필로 전달
+        // 메인 CTA — 홈으로 복귀하여 동물상 케미 확인
         SajuButton(
-          label: '운명의 인연 찾으러 가기',
-          onPressed: () => context.go(
-            RoutePaths.matchingProfile,
-            extra: photoUrls.isNotEmpty
-                ? {'gwansangPhotoUrls': photoUrls}
-                : null,
-          ),
+          label: '동물상 케미 확인하러 가기',
+          onPressed: () => context.go(RoutePaths.home),
           variant: SajuVariant.filled,
           color: SajuColor.primary,
           size: SajuSize.lg,
@@ -546,17 +541,6 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
           color: SajuColor.primary,
           size: SajuSize.lg,
           leadingIcon: Icons.share_outlined,
-        ),
-
-        SajuSpacing.gap8,
-
-        // 나중에
-        SajuButton(
-          label: '나중에 할게요',
-          onPressed: () => context.go(RoutePaths.home),
-          variant: SajuVariant.ghost,
-          color: SajuColor.primary,
-          size: SajuSize.sm,
         ),
       ],
     );

@@ -211,11 +211,11 @@ class _GwansangBridgePageState extends ConsumerState<GwansangBridgePage>
 
                         SajuSpacing.gap12,
 
-                        // 나중에 할게요
+                        // 나중에 할게요 → 홈으로 복귀
                         SajuButton(
                           label: '나중에 할게요',
                           onPressed: () =>
-                              context.go(RoutePaths.matchingProfile),
+                              context.go(RoutePaths.home),
                           variant: SajuVariant.ghost,
                           color: SajuColor.primary,
                           size: SajuSize.sm,
