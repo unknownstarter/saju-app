@@ -31,7 +31,6 @@ import '../../../gwansang/domain/entities/animal_type.dart';
 import '../../../gwansang/domain/entities/face_measurements.dart';
 import '../../../gwansang/domain/entities/gwansang_entity.dart';
 import '../../../gwansang/presentation/providers/gwansang_provider.dart';
-import '../../../saju/domain/entities/saju_entity.dart';
 import '../../../saju/presentation/providers/saju_provider.dart';
 import '../../../saju/presentation/widgets/five_elements_chart.dart';
 import '../../../saju/presentation/widgets/pillar_card.dart';
@@ -207,7 +206,7 @@ class _DestinyResultPageState extends ConsumerState<DestinyResultPage>
 
   Widget _buildHero(
     BuildContext context,
-    SajuColorScheme colors,
+    SajuColors colors,
     SajuColor elementColor,
   ) {
     final sajuProfile = _sajuResult!.profile;
@@ -332,7 +331,7 @@ class _DestinyResultPageState extends ConsumerState<DestinyResultPage>
 
           // 타이틀
           Text(
-            '${_sajuResult!.profile.summary}',
+            _sajuResult!.profile.summary,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colors.textPrimary,
                   letterSpacing: 1,
@@ -689,7 +688,7 @@ class _GwansangTab extends StatelessWidget {
     );
   }
 
-  Widget _buildAnimalHero(BuildContext context, SajuColorScheme colors) {
+  Widget _buildAnimalHero(BuildContext context, SajuColors colors) {
     return Column(
       children: [
         Stack(
@@ -758,7 +757,7 @@ class _GwansangTab extends StatelessWidget {
     BuildContext context,
     String title,
     String body,
-    SajuColorScheme colors,
+    SajuColors colors,
   ) {
     return SajuCard(
       variant: SajuVariant.elevated,
@@ -785,7 +784,7 @@ class _GwansangTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSynergyCard(BuildContext context, SajuColorScheme colors) {
+  Widget _buildSynergyCard(BuildContext context, SajuColors colors) {
     return SajuCard(
       variant: SajuVariant.elevated,
       borderColor: AppTheme.mysticGlow.withValues(alpha: 0.2),
@@ -818,7 +817,7 @@ class _GwansangTab extends StatelessWidget {
     );
   }
 
-  Widget _buildCompatibleAnimals(BuildContext context, SajuColorScheme colors) {
+  Widget _buildCompatibleAnimals(BuildContext context, SajuColors colors) {
     AnimalType? bestMatch;
     AnimalType? pushPull;
 
@@ -874,7 +873,7 @@ class _GwansangTab extends StatelessWidget {
     BuildContext context, {
     required String label,
     required AnimalType animal,
-    required SajuColorScheme colors,
+    required SajuColors colors,
     required Color accentColor,
   }) {
     return Row(

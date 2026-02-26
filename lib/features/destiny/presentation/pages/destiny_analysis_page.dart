@@ -23,6 +23,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../core/theme/tokens/saju_colors.dart';
 import '../../../../core/theme/tokens/saju_spacing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../gwansang/presentation/providers/gwansang_provider.dart';
@@ -305,7 +306,7 @@ class _DestinyAnalysisPageState extends ConsumerState<DestinyAnalysisPage>
   // 메인 콘텐츠
   // ---------------------------------------------------------------------------
 
-  Widget _buildContent(SajuColorScheme colors) {
+  Widget _buildContent(SajuColors colors) {
     return Stack(
       children: [
         _buildBackgroundGlow(),
@@ -460,7 +461,7 @@ class _DestinyAnalysisPageState extends ConsumerState<DestinyAnalysisPage>
   // 프로그레스 바
   // ---------------------------------------------------------------------------
 
-  Widget _buildProgressBar(SajuColorScheme colors) {
+  Widget _buildProgressBar(SajuColors colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: AnimatedBuilder(
@@ -525,7 +526,7 @@ class _DestinyAnalysisPageState extends ConsumerState<DestinyAnalysisPage>
   // 에러 상태
   // ---------------------------------------------------------------------------
 
-  Widget _buildErrorState(SajuColorScheme colors) {
+  Widget _buildErrorState(SajuColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: SajuSpacing.space32),
