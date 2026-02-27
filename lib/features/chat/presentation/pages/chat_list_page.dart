@@ -28,7 +28,7 @@ class ChatListPage extends ConsumerWidget {
             ),
       ),
       body: chatRoomsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const MomoLoading(),
         error: (_, __) => SajuErrorState(
           message: '채팅 목록을 불러올 수 없어요',
           onRetry: () => ref.invalidate(chatRoomsProvider),

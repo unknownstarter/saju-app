@@ -165,7 +165,18 @@ class _LoginPageState extends ConsumerState<LoginPage>
                   // === 상단: 카피 영역 ===
                   const Spacer(flex: 3),
                   _buildCopySection(),
-                  const Spacer(flex: 4),
+                  const Spacer(flex: 2),
+
+                  // === 캐릭터 GIF ===
+                  Center(
+                    child: Image.asset(
+                      'assets/images/characters/glod_rabbit_thrash.gif',
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const Spacer(flex: 2),
 
                   // === 하단: CTA 영역 ===
                   _buildCTASection(),
@@ -185,7 +196,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       children: [
         // 브랜드명
         const Text(
-          '사주인연',
+          'momo',
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
             fontSize: 14,

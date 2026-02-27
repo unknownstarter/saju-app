@@ -27,9 +27,7 @@ class ProfilePage extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: userAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          loading: () => const MomoLoading(),
           error: (_, __) => SajuErrorState(
             message: '프로필을 불러오지 못했어요',
             onRetry: () => ref.invalidate(currentUserProfileProvider),

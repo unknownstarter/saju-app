@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/tokens/saju_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/momo_loading.dart';
 import '../../../../core/widgets/saju_avatar.dart';
 import '../../../../core/widgets/saju_badge.dart';
 import '../../../../core/widgets/saju_enums.dart';
@@ -67,8 +68,7 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
           // 메시지 영역
           Expanded(
             child: messagesAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => const MomoLoading(),
               error: (error, st) => Center(
                 child: Text(
                   '메시지를 불러올 수 없어요',

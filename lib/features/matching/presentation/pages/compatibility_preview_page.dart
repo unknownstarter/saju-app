@@ -65,12 +65,7 @@ class CompatibilityPreviewPage extends ConsumerWidget {
                   compatibilityAsync.when(
                     loading: () => const SizedBox(
                       height: 280,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppTheme.mysticGlow,
-                        ),
-                      ),
+                      child: MomoLoading(),
                     ),
                     error: (_, _) => SizedBox(
                       height: 200,
@@ -87,12 +82,7 @@ class CompatibilityPreviewPage extends ConsumerWidget {
                       if (compat == null) {
                         return const SizedBox(
                           height: 200,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppTheme.mysticGlow,
-                            ),
-                          ),
+                          child: MomoLoading(),
                         );
                       }
                       return _buildResult(context, textTheme, compat);

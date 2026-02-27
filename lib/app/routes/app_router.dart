@@ -9,6 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/network/supabase_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/momo_loading.dart';
 import '../../core/theme/theme_extensions.dart';
 import '../../core/theme/tokens/saju_animation.dart';
 import '../providers/notification_badge_provider.dart';
@@ -818,14 +819,7 @@ class _SplashPageState extends ConsumerState<_SplashPage> {
               ),
             ),
             const SizedBox(height: 40),
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppTheme.mysticGlow.withValues(alpha: 0.5),
-              ),
-            ),
+            const MomoLoading(size: 48),
           ],
         ),
       ),

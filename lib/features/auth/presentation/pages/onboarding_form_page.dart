@@ -239,9 +239,12 @@ class _OnboardingFormPageState extends State<OnboardingFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F3EE),
-      body: SafeArea(
+    // Scaffold를 사용하지 않음 — 부모(OnboardingPage)의 Scaffold가 배경을 담당.
+    // FadeTransition 안에 Scaffold가 있으면 saveLayer 합성 시
+    // 한 프레임 동안 검은 Surface가 노출되는 플리커 발생.
+    return ColoredBox(
+      color: const Color(0xFFF7F3EE),
+      child: SafeArea(
         child: Column(
           children: [
             // --- 상단: 뒤로가기 ---

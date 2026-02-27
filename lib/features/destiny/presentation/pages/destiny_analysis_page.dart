@@ -308,7 +308,34 @@ class _DestinyAnalysisPageState extends ConsumerState<DestinyAnalysisPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Spacer(flex: 3),
+            // --- 로딩 캐릭터 GIF ---
+            const Spacer(flex: 2),
+
+            Center(
+              child: Image.asset(
+                'assets/images/characters/loading_spinner.gif',
+                width: 160,
+                height: 160,
+                fit: BoxFit.contain,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // --- 안내 텍스트 ---
+            Center(
+              child: Text(
+                '잠시만 기다려 주세요',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFFE8E4DF).withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 60),
 
             // --- 단계 인디케이터 (스텝 dots) ---
             _buildStepIndicator(colors),
@@ -351,27 +378,12 @@ class _DestinyAnalysisPageState extends ConsumerState<DestinyAnalysisPage>
               ),
             ),
 
-            const SizedBox(height: SajuSpacing.space48),
+            const SizedBox(height: SajuSpacing.space32),
 
             // --- 프로그레스 바 ---
             _buildProgressBar(colors),
 
-            const Spacer(flex: 5),
-
-            // --- 하단 안내 ---
-            Center(
-              child: Text(
-                '잠시만 기다려 주세요',
-                style: TextStyle(
-                  fontFamily: AppTheme.fontFamily,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFFE8E4DF).withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: SajuSpacing.space32),
+            const Spacer(flex: 1),
           ],
         ),
       ),

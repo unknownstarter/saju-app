@@ -612,16 +612,7 @@ class _SajuAnalysisPageState extends ConsumerState<SajuAnalysisPage>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                AppTheme.mysticGlow.withValues(alpha: 0.6),
-              ),
-            ),
-          ),
+          const MomoLoading(size: 48),
           SajuSpacing.gap8,
           Text(
             '조금만 더 기다려 줘...',

@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/tokens/saju_spacing.dart';
-import '../../../../core/widgets/widgets.dart';
 import '../providers/onboarding_provider.dart';
 import 'onboarding_form_page.dart';
 
@@ -137,120 +136,125 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
   @override
   Widget build(BuildContext context) {
-    if (_showForm) {
-      return FadeTransition(
-        opacity: _fadeAnimation,
-        child: OnboardingFormPage(onComplete: _onFormComplete),
-      );
-    }
-
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
+    // Stack으로 인트로 슬라이드 위에 폼을 겹쳐서 fade-in.
+    // 인트로가 배경으로 남아 있으므로 검은 화면이 비치지 않는다.
     return Scaffold(
       backgroundColor: const Color(0xFFF7F3EE),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: bottomPadding > 0 ? 4 : SajuSpacing.space16,
-          ),
-          child: Column(
-            children: [
-              // --- 인트로 슬라이드 영역 ---
-              Expanded(
-                child: PageView.builder(
-                  controller: _introPageController,
-                  itemCount: _introSlides.length,
-                  onPageChanged: (index) {
-                    setState(() => _currentIntroPage = index);
-                  },
-                  itemBuilder: (context, index) {
-                    return _buildIntroSlide(_introSlides[index], index);
-                  },
-                ),
+      body: Stack(
+        children: [
+          // --- 인트로 슬라이드 (배경으로 유지) ---
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: bottomPadding > 0 ? 4 : SajuSpacing.space16,
               ),
-
-              // --- 하단 영역: 인디케이터 + 버튼 ---
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: SajuSpacing.space24,
-                ),
-                child: Column(
-                  children: [
-                    // 페이지 인디케이터
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        _introSlides.length,
-                        (index) => _buildDot(index),
-                      ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _introPageController,
+                      itemCount: _introSlides.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentIntroPage = index);
+                      },
+                      itemBuilder: (context, index) {
+                        return _buildIntroSlide(_introSlides[index], index);
+                      },
                     ),
+                  ),
 
-                    const SizedBox(height: SajuSpacing.space32),
-
-                    // CTA 버튼
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_currentIntroPage < _introSlides.length - 1) {
-                            _introPageController.nextPage(
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeInOut,
-                            );
-                          } else {
-                            _startForm();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2D2D2D),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                  // --- 하단 영역: 인디케이터 + 버튼 ---
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: SajuSpacing.space24,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            _introSlides.length,
+                            (index) => _buildDot(index),
                           ),
                         ),
-                        child: Text(
-                          _currentIntroPage == _introSlides.length - 1
-                              ? '시작하기'
-                              : '다음',
-                          style: const TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.3,
+
+                        const SizedBox(height: SajuSpacing.space32),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_currentIntroPage <
+                                  _introSlides.length - 1) {
+                                _introPageController.nextPage(
+                                  duration:
+                                      const Duration(milliseconds: 350),
+                                  curve: Curves.easeInOut,
+                                );
+                              } else {
+                                _startForm();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2D2D2D),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(
+                              _currentIntroPage == _introSlides.length - 1
+                                  ? '시작하기'
+                                  : '다음',
+                              style: const TextStyle(
+                                fontFamily: AppTheme.fontFamily,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: SajuSpacing.space8),
+                        const SizedBox(height: SajuSpacing.space8),
 
-                    // 건너뛰기
-                    GestureDetector(
-                      onTap: _startForm,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: SajuSpacing.space12,
-                        ),
-                        child: Text(
-                          '건너뛰기',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF2D2D2D)
-                                .withValues(alpha: 0.35),
+                        GestureDetector(
+                          onTap: _startForm,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: SajuSpacing.space12,
+                            ),
+                            child: Text(
+                              '건너뛰기',
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF2D2D2D)
+                                    .withValues(alpha: 0.35),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+
+          // --- 온보딩 폼 (인트로 위에 fade-in) ---
+          if (_showForm)
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: OnboardingFormPage(onComplete: _onFormComplete),
+            ),
+        ],
       ),
     );
   }

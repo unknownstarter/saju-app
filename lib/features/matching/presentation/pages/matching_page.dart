@@ -67,9 +67,7 @@ class _MatchingPageState extends ConsumerState<MatchingPage> {
             // ---- 프로필 그리드 ----
             Expanded(
               child: recommendations.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                loading: () => const MomoLoading(),
                 error: (_, _) => _buildErrorState(),
                 data: (profiles) {
                   final filtered = _selectedFilter == null

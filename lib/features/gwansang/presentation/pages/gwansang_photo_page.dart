@@ -248,16 +248,7 @@ class _GwansangPhotoPageState extends ConsumerState<GwansangPhotoPage> {
   /// 빈 사진 슬롯
   Widget _buildEmptySlot(int index, bool isActive, SajuColors colors) {
     if (_isValidating && index == _currentPhotoIndex) {
-      return const Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: AppTheme.mysticGlow,
-          ),
-        ),
-      );
+      return const MomoLoading(size: 48);
     }
 
     return Column(
