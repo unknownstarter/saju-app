@@ -6,9 +6,19 @@ const CORS_HEADERS = {
 };
 
 interface Pillar {
-  heavenlyStem: string;
-  earthlyBranch: string;
-  hanja: string;
+  heavenlyStem?: string;
+  earthlyBranch?: string;
+  stem?: string;
+  branch?: string;
+  hanja?: string;
+}
+
+function pillarStem(p: Pillar): string {
+  return p.heavenlyStem ?? p.stem ?? "";
+}
+
+function pillarBranch(p: Pillar): string {
+  return p.earthlyBranch ?? p.branch ?? "";
 }
 
 interface FiveElements {
@@ -94,11 +104,11 @@ function buildUserPrompt(sajuResult: SajuResult, userName: string): string {
   const character = CHARACTER_MAP[sajuResult.dominantElement] ?? CHARACTER_MAP["earth"];
 
   const pillarsText = [
-    `년주(年柱): ${sajuResult.yearPillar.heavenlyStem}${sajuResult.yearPillar.earthlyBranch} (${sajuResult.yearPillar.hanja})`,
-    `월주(月柱): ${sajuResult.monthPillar.heavenlyStem}${sajuResult.monthPillar.earthlyBranch} (${sajuResult.monthPillar.hanja})`,
-    `일주(日柱): ${sajuResult.dayPillar.heavenlyStem}${sajuResult.dayPillar.earthlyBranch} (${sajuResult.dayPillar.hanja})`,
+    `년주(年柱): ${pillarStem(sajuResult.yearPillar)}${pillarBranch(sajuResult.yearPillar)}`,
+    `월주(月柱): ${pillarStem(sajuResult.monthPillar)}${pillarBranch(sajuResult.monthPillar)}`,
+    `일주(日柱): ${pillarStem(sajuResult.dayPillar)}${pillarBranch(sajuResult.dayPillar)}`,
     sajuResult.hourPillar
-      ? `시주(時柱): ${sajuResult.hourPillar.heavenlyStem}${sajuResult.hourPillar.earthlyBranch} (${sajuResult.hourPillar.hanja})`
+      ? `시주(時柱): ${pillarStem(sajuResult.hourPillar)}${pillarBranch(sajuResult.hourPillar)}`
       : "시주(時柱): 미입력",
   ].join("\n");
 

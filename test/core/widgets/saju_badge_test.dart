@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:saju_app/core/widgets/saju_badge.dart';
-import 'package:saju_app/core/widgets/saju_enums.dart';
+import 'package:momo_app/core/widgets/saju_badge.dart';
+import 'package:momo_app/core/widgets/saju_enums.dart';
 
 void main() {
   Widget buildApp({required Widget child}) {

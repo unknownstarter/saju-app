@@ -1,7 +1,7 @@
 /// Saju 디자인 토큰 — barrel export
 ///
 /// ```dart
-/// import 'package:saju_app/core/theme/tokens/tokens.dart';
+/// import 'package:momo_app/core/theme/tokens/tokens.dart';
 /// ```
 library;
 

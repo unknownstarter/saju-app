@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:saju_app/core/widgets/saju_avatar.dart';
-import 'package:saju_app/core/widgets/saju_enums.dart';
+import 'package:momo_app/core/widgets/saju_avatar.dart';
+import 'package:momo_app/core/widgets/saju_enums.dart';
 
 /// SajuAvatar 테스트를 위한 헬퍼 — MaterialApp으로 감싸서 Theme/MediaQuery 제공
 Widget _buildTestApp(Widget child) {

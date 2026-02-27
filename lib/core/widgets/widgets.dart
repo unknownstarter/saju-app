@@ -4,7 +4,7 @@
 /// 커스텀 컴포넌트 라이브러리.
 ///
 /// ```dart
-/// import 'package:saju_app/core/widgets/widgets.dart';
+/// import 'package:momo_app/core/widgets/widgets.dart';
 /// ```
 library;
 

@@ -9,8 +9,8 @@ import '../core/theme/app_theme.dart';
 ///
 /// MaterialApp.router를 사용하여 go_router 기반 선언적 라우팅을 적용합니다.
 /// ConsumerWidget으로 Riverpod 상태를 직접 구독할 수 있습니다.
-class SajuApp extends ConsumerWidget {
-  const SajuApp({super.key});
+class MomoApp extends ConsumerWidget {
+  const MomoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,7 +20,7 @@ class SajuApp extends ConsumerWidget {
 
     return MaterialApp.router(
       // --- 기본 설정 ---
-      title: '사주인연',
+      title: 'momo',
       debugShowCheckedModeBanner: false,
 
       // --- 라우팅 (go_router) ---

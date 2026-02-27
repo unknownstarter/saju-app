@@ -1,4 +1,4 @@
-package com.nworld.saju_app
+package com.nworld.momo
 
 import io.flutter.embedding.android.FlutterActivity
 

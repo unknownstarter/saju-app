@@ -1,6 +1,6 @@
-# saju_app
+# momo
 
-A new Flutter project.
+사주 기반 소개팅 앱 — 운명적 만남을 찾아주는 momo.
 
 ## Getting Started
 

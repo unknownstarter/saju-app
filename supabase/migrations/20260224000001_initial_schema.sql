@@ -2,14 +2,13 @@
 -- Saju App Initial Schema
 -- ============================================================
 
--- Enable necessary extensions
-create extension if not exists "uuid-ossp";
+-- pgcrypto is pre-installed on Supabase; gen_random_uuid() is available by default.
 
 -- ============================================================
 -- PROFILES (유저 기본 정보)
 -- ============================================================
 create table public.profiles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   auth_id uuid unique not null references auth.users(id) on delete cascade,
   name text not null,
   birth_date date not null,
@@ -38,7 +37,7 @@ create index idx_profiles_last_active on public.profiles(last_active_at desc);
 -- SAJU PROFILES (사주 분석 결과)
 -- ============================================================
 create table public.saju_profiles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid unique not null references public.profiles(id) on delete cascade,
   year_pillar jsonb not null,
   month_pillar jsonb not null,
@@ -56,7 +55,7 @@ create table public.saju_profiles (
 -- SAJU COMPATIBILITY (궁합 결과 — 캐시)
 -- ============================================================
 create table public.saju_compatibility (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
   partner_id uuid not null references public.profiles(id),
   total_score int not null check (total_score between 0 and 100),
@@ -79,7 +78,7 @@ create index idx_compatibility_partner on public.saju_compatibility(partner_id);
 -- DAILY MATCHES (매일 추천)
 -- ============================================================
 create table public.daily_matches (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
   recommended_id uuid not null references public.profiles(id),
   compatibility_id uuid references public.saju_compatibility(id),
@@ -95,7 +94,7 @@ create index idx_daily_matches_user_date on public.daily_matches(user_id, match_
 -- LIKES (좋아요)
 -- ============================================================
 create table public.likes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   sender_id uuid not null references public.profiles(id),
   receiver_id uuid not null references public.profiles(id),
   is_premium boolean not null default false,
@@ -112,7 +111,7 @@ create index idx_likes_sender on public.likes(sender_id);
 -- MATCHES (매칭 성사)
 -- ============================================================
 create table public.matches (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user1_id uuid not null references public.profiles(id),
   user2_id uuid not null references public.profiles(id),
   like_id uuid references public.likes(id),
@@ -127,7 +126,7 @@ create index idx_matches_users on public.matches(user1_id, user2_id);
 -- CHAT ROOMS (채팅방)
 -- ============================================================
 create table public.chat_rooms (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   match_id uuid unique not null references public.matches(id),
   user1_id uuid not null references public.profiles(id),
   user2_id uuid not null references public.profiles(id),
@@ -135,13 +134,14 @@ create table public.chat_rooms (
   created_at timestamptz not null default now()
 );
 
-create index idx_chat_rooms_users on public.chat_rooms using gin(array[user1_id, user2_id]);
+create index idx_chat_rooms_user1 on public.chat_rooms(user1_id);
+create index idx_chat_rooms_user2 on public.chat_rooms(user2_id);
 
 -- ============================================================
 -- CHAT MESSAGES (채팅 메시지)
 -- ============================================================
 create table public.chat_messages (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   room_id uuid not null references public.chat_rooms(id) on delete cascade,
   sender_id uuid not null references public.profiles(id),
   content text not null,
@@ -156,7 +156,7 @@ create index idx_messages_room_created on public.chat_messages(room_id, created_
 -- USER POINTS (포인트 잔액)
 -- ============================================================
 create table public.user_points (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid unique not null references public.profiles(id) on delete cascade,
   balance int not null default 0 check (balance >= 0),
   total_earned int not null default 0,
@@ -168,7 +168,7 @@ create table public.user_points (
 -- POINT TRANSACTIONS (포인트 거래 내역)
 -- ============================================================
 create table public.point_transactions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
   type text not null check (type in (
     'purchase', 'like_sent', 'premium_like_sent', 'accept',
@@ -187,7 +187,7 @@ create index idx_point_tx_user on public.point_transactions(user_id, created_at 
 -- DAILY USAGE (일일 무료 사용량)
 -- ============================================================
 create table public.daily_usage (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
   usage_date date not null default current_date,
   free_likes_used int not null default 0 check (free_likes_used between 0 and 3),
@@ -199,7 +199,7 @@ create table public.daily_usage (
 -- BLOCKS (차단)
 -- ============================================================
 create table public.blocks (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   blocker_id uuid not null references public.profiles(id),
   blocked_id uuid not null references public.profiles(id),
   created_at timestamptz not null default now(),
@@ -210,7 +210,7 @@ create table public.blocks (
 -- REPORTS (신고)
 -- ============================================================
 create table public.reports (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   reporter_id uuid not null references public.profiles(id),
   reported_id uuid not null references public.profiles(id),
   reason text not null,
@@ -223,7 +223,7 @@ create table public.reports (
 -- PURCHASES (IAP 구매 내역)
 -- ============================================================
 create table public.purchases (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
   product_type text not null check (product_type in (
     'point_package', 'detailed_compatibility', 'character_skin',
@@ -243,7 +243,7 @@ create index idx_purchases_user on public.purchases(user_id, purchased_at desc);
 -- CHARACTER ITEMS (캐릭터 커스터마이징)
 -- ============================================================
 create table public.character_items (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
   item_type text not null check (item_type in ('outfit', 'accessory', 'background')),
   item_id text not null,

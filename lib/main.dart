@@ -5,10 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
 
-/// Saju Dating App - 사주 기반 소개팅 앱
+/// Momo — 사주 기반 소개팅 앱
 ///
 /// Clean Architecture + Riverpod + go_router + Supabase
-/// 모든 초기화가 완료된 후에만 앱이 시작됩니다.
 Future<void> main() async {
   // Flutter 엔진과 위젯 바인딩 초기화
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,15 +28,14 @@ Future<void> main() async {
   );
 
   // Supabase 초기화
-  // TODO: 환경변수로 관리할 것 (--dart-define 또는 .env)
   await Supabase.initialize(
     url: const String.fromEnvironment(
       'SUPABASE_URL',
-      defaultValue: 'https://your-project-ref.supabase.co', // TODO: 실제 URL로 교체
+      defaultValue: 'https://csjdfvxyjnpmbkjbomyf.supabase.co',
     ),
     anonKey: const String.fromEnvironment(
       'SUPABASE_ANON_KEY',
-      defaultValue: 'your-anon-key-here', // TODO: 실제 키로 교체
+      defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzamRmdnh5am5wbWJramJvbXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNjUyNDksImV4cCI6MjA4Nzc0MTI0OX0.E3-4aMdDkzY8VGxqh_GEQXnkGAdPjDWpB8XDLQBqyek',
     ),
     authOptions: const FlutterAuthClientOptions(
       // 딥링크 콜백 스킴 (소셜 로그인 리다이렉트용)
@@ -53,7 +51,7 @@ Future<void> main() async {
   // overrides를 통해 런타임 의존성 주입 가능
   runApp(
     const ProviderScope(
-      child: SajuApp(),
+      child: MomoApp(),
     ),
   );
 }

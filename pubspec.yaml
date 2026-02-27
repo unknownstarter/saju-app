@@ -1,5 +1,5 @@
-name: saju_app
-description: "사주 기반 소개팅 앱 - 운명적 만남을 찾아주는 사주인연"
+name: momo_app
+description: "momo - 사주 기반 소개팅 앱, 운명적 만남"
 publish_to: 'none'
 version: 1.0.0+1
 

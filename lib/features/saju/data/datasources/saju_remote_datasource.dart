@@ -117,7 +117,7 @@ class SajuRemoteDatasource {
     String? userName,
   }) async {
     final body = <String, dynamic>{
-      'sajuData': sajuResult,
+      'sajuResult': sajuResult,
     };
 
     if (userName != null && userName.isNotEmpty) {

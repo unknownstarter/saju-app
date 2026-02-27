@@ -1,4 +1,4 @@
-# Saju App — 사주 기반 소개팅 앱
+# Momo — 사주 기반 소개팅 앱
 
 ## CRITICAL: AI Persona — 이 섹션은 모든 행동의 최상위 원칙이다
 
@@ -50,6 +50,21 @@
 - 사주/운세 × 데이팅 교차점에 제대로 된 플레이어 **없음**
 - 서양 점성술 데이팅(Struck, NUiT) 실패 → 한국은 구조적으로 다름 (84.5% 이용률)
 - 한국 시장 특수성: 좁은 국토 + 수도권 집중 → 유저풀 문제 완화
+
+---
+
+## 프로젝트 식별자 (2026-02-27 리네이밍)
+
+| 항목 | 값 |
+|------|-----|
+| **앱 이름** | momo |
+| **패키지명** | `momo_app` |
+| **iOS Bundle ID** | `com.nworld.momo` |
+| **Android App ID** | `com.nworld.momo` |
+| **GitHub** | `unknownstarter/momo-app` |
+| **Supabase Project** | `csjdfvxyjnpmbkjbomyf` |
+
+> **주의**: feature 이름(saju, gwansang), 위젯 prefix(Saju~), DB 테이블명(saju_profiles)은 도메인 용어이므로 momo로 변경하지 않음.
 
 ---
 
