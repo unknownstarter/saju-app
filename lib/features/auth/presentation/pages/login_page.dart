@@ -165,18 +165,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                   // === 상단: 카피 영역 ===
                   const Spacer(flex: 3),
                   _buildCopySection(),
-                  const Spacer(flex: 2),
-
-                  // === 캐릭터 GIF ===
-                  Center(
-                    child: Image.asset(
-                      'assets/images/characters/glod_rabbit_thrash.gif',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 4),
 
                   // === 하단: CTA 영역 ===
                   _buildCTASection(),
