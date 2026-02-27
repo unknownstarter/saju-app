@@ -283,77 +283,82 @@ abstract final class AppLimits {
 // 캐릭터 에셋 경로 상수
 // =============================================================================
 
+/// 개별 캐릭터의 에셋 경로를 체계적으로 관리하는 헬퍼.
+///
+/// ```dart
+/// CharacterAssets.namuri.defaultImage        // default.png
+/// CharacterAssets.namuri.expression('love')  // expressions/love.png
+/// CharacterAssets.namuri.pose('sitting')     // poses/sitting.png
+/// CharacterAssets.namuri.view('front')       // views/front.png
+/// ```
+class CharacterPath {
+  const CharacterPath(this._folder);
+  final String _folder;
+
+  static const _base = 'assets/images/characters';
+
+  String get defaultImage => '$_base/$_folder/default.png';
+  String expression(String name) => '$_base/$_folder/expressions/$name.png';
+  String pose(String name) => '$_base/$_folder/poses/$name.png';
+  String view(String name) => '$_base/$_folder/views/$name.png';
+}
+
 /// 오행 마스코트 캐릭터 에셋 경로
 ///
 /// 모든 캐릭터 에셋은 이곳에서 관리합니다.
 /// 절대 presentation 레이어에서 직접 문자열로 참조하지 마세요.
+///
+/// **새 API** — 개별 표정/포즈/뷰 접근:
+/// ```dart
+/// CharacterAssets.namuri.expression('love')   // 하트눈
+/// CharacterAssets.soedongi.pose('sitting')    // 앉기
+/// CharacterAssets.goldTokki.view('front')     // 정면
+/// ```
+///
+/// **캐릭터 이름 변경**: [CharacterPath] 생성자의 폴더명만 바꾸면 됩니다.
 abstract final class CharacterAssets {
-  // --- 기본(default) 에셋 ---
+  // --- 캐릭터 경로 객체 (개별 표정/포즈/뷰 접근용) ---
+  static const namuri = CharacterPath('namuri');
+  static const namuriGf = CharacterPath('namuri_girlfriend');
+  static const bulkkori = CharacterPath('bulkkori');
+  static const heuksuni = CharacterPath('heuksuni');
+  static const soedongi = CharacterPath('soedongi');
+  static const mulgyeori = CharacterPath('mulgyeori');
+  static const goldTokki = CharacterPath('gold_tokki');
+  static const blackTokki = CharacterPath('black_tokki');
+
+  // --- 기존 호환: 기본(default) 에셋 상수 (const 유지) ---
   static const namuriWoodDefault =
-      'assets/images/characters/namuri_wood_default.png';
+      'assets/images/characters/namuri/default.png';
   static const bulkkoriFireDefault =
-      'assets/images/characters/bulkkori_fire_default.png';
+      'assets/images/characters/bulkkori/default.png';
   static const heuksuniEarthDefault =
-      'assets/images/characters/heuksuni_earth_default.png';
+      'assets/images/characters/heuksuni/default.png';
   static const soedongiMetalDefault =
-      'assets/images/characters/soedongi_metal_default.png';
+      'assets/images/characters/soedongi/default.png';
   static const mulgyeoriWaterDefault =
-      'assets/images/characters/mulgyeori_water_default.png';
-
-  // --- 표정(expressions) ---
-  static const namuriWoodExpressions =
-      'assets/images/characters/namuri_wood_expressions.png';
-  static const bulkkoriFireExpressions =
-      'assets/images/characters/bulkkori_fire_expressions.png';
-  static const heuksuniEarthExpressions =
-      'assets/images/characters/heuksuni_earth_expressions.png';
-  static const soedongiMetalExpressions =
-      'assets/images/characters/soedongi_metal_expressions.png';
-  static const mulgyeoriWaterExpressions =
-      'assets/images/characters/mulgyeori_water_expressions.png';
-
-  // --- 포즈(poses) ---
-  static const namuriWoodPoses =
-      'assets/images/characters/namuri_wood_poses.png';
-  static const bulkkoriFirePoses =
-      'assets/images/characters/bulkkori_fire_poses.png';
-  static const heuksuniEarthPoses =
-      'assets/images/characters/heuksuni_earth_poses.png';
-  static const soedongiMetalPoses =
-      'assets/images/characters/soedongi_metal_poses.png';
-  static const mulgyeoriWaterPoses =
-      'assets/images/characters/mulgyeori_water_poses.png';
-
-  // --- 턴어라운드(turnaround) ---
-  static const namuriWoodTurnaround =
-      'assets/images/characters/namuri_wood_turnaround.png';
-  static const bulkkoriFireTurnaround =
-      'assets/images/characters/bulkkori_fire_turnaround.png';
-  static const heuksuniEarthTurnaround =
-      'assets/images/characters/heuksuni_earth_turnaround.png';
-  static const soedongiMetalTurnaround =
-      'assets/images/characters/soedongi_metal_turnaround.png';
-  static const mulgyeoriWaterTurnaround =
-      'assets/images/characters/mulgyeori_water_turnaround.png';
-
-  // --- 보너스 캐릭터 ---
+      'assets/images/characters/mulgyeori/default.png';
   static const goldTokkiDefault =
-      'assets/images/characters/gold_tokki_default.png';
+      'assets/images/characters/gold_tokki/default.png';
   static const blackTokkiDefault =
-      'assets/images/characters/black_tokki_default.png';
+      'assets/images/characters/black_tokki/default.png';
   static const namuriGirlfriendDefault =
-      'assets/images/characters/namuri_girlfriend_default.png';
+      'assets/images/characters/namuri_girlfriend/default.png';
 
-  // --- 오행별 기본 에셋 조회 ---
+  // --- 오행별 캐릭터 매핑 ---
+
+  /// FiveElementType → CharacterPath
+  static CharacterPath pathFor(FiveElementType element) => switch (element) {
+        FiveElementType.wood => namuri,
+        FiveElementType.fire => bulkkori,
+        FiveElementType.earth => heuksuni,
+        FiveElementType.metal => soedongi,
+        FiveElementType.water => mulgyeori,
+      };
 
   /// FiveElementType → 기본 에셋 경로
-  static String defaultFor(FiveElementType element) => switch (element) {
-        FiveElementType.wood => namuriWoodDefault,
-        FiveElementType.fire => bulkkoriFireDefault,
-        FiveElementType.earth => heuksuniEarthDefault,
-        FiveElementType.metal => soedongiMetalDefault,
-        FiveElementType.water => mulgyeoriWaterDefault,
-      };
+  static String defaultFor(FiveElementType element) =>
+      pathFor(element).defaultImage;
 
   /// FiveElementType → 캐릭터 이름
   static String nameFor(FiveElementType element) => switch (element) {

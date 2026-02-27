@@ -311,3 +311,80 @@ Midjourney:
 | 새싹 | `#8FB89A` | 부드러운 초록 |
 | 물방울 | `#89B0CB` | 투명 하늘색 |
 | 코 (기본) | `#D4918E` | 연한 코랄 |
+
+---
+
+## 에셋 제작 규격 (2026-02-27 추가)
+
+### 폴더 구조
+
+2026-02-27부터 플랫 스프라이트 시트 → **개별 파일 폴더 구조**로 전환.
+현재 8캐릭터, 103개 개별 PNG 보유.
+
+```
+assets/images/characters/{character_name}/
+├── default.png              # 정면 기본 표정 (필수)
+├── expressions/             # 개별 표정 PNG
+│   ├── default.png
+│   ├── laugh.png
+│   ├── surprised.png
+│   ├── angry.png
+│   ├── sad.png
+│   └── love.png
+├── poses/                   # 개별 포즈 PNG
+│   ├── standing.png
+│   ├── sitting.png
+│   └── waving.png
+└── views/                   # 방향별 PNG
+    ├── front.png
+    ├── side.png
+    └── back.png
+```
+
+### 필수 산출물 (캐릭터 1종당)
+
+1. **`default.png`** — 정면 기본 표정 (1024x1024, 배경 투명)
+2. **`expressions/`** — 개별 표정 PNG (최소 5종: default, laugh, surprised, sad, love)
+3. **`poses/`** — 개별 포즈 PNG (최소 3종: standing, sitting, waving)
+4. **`views/`** — 방향별 PNG (3종: front, side, back)
+
+### 네이밍 규칙
+
+- 캐릭터 디렉토리: `snake_case` (예: `gold_tokki`, `namuri_girlfriend`)
+- 표정 파일: 감정 영문명 (예: `laugh.png`, `angry.png`, `love.png`)
+- 포즈 파일: 동작 영문명 (예: `standing.png`, `sitting.png`, `waving.png`)
+- 뷰 파일: 방향 영문명 (예: `front.png`, `side.png`, `back.png`)
+- 확장 표정/포즈 자유 추가 가능 (예: 흙순이 `cross_legs.png`, 황금토끼 `thinking.png`)
+
+### 제작 워크플로우
+
+1. **AI 도구로 스프라이트 시트 생성** — 한 이미지에 여러 포즈/표정을 배치
+2. **자동 분리** — `rembg` + `scipy` connected component 분석으로 개별 캐릭터 자동 추출
+3. **배경 제거(누끼)** — "캐릭터 영역 외 흰색 덮기 → rembg" 방식 (텍스트/라벨 제거 포함)
+4. **파일 배치** — `{character}/{variant}/{name}.png` 구조에 맞춰 저장
+
+### 코드 접근 API
+
+```dart
+// 개별 에셋 접근
+CharacterAssets.namuri.expression('love')    // → expressions/love.png
+CharacterAssets.namuri.pose('sitting')       // → poses/sitting.png
+CharacterAssets.namuri.view('front')         // → views/front.png
+CharacterAssets.namuri.defaultImage          // → default.png
+```
+
+### 현재 보유 현황 (2026-02-27)
+
+| 캐릭터 | 표정 | 포즈 | 뷰 | 총계 |
+|--------|------|------|-----|------|
+| 나무리 (namuri) | 6 | 3 | 3 | 13 |
+| 나무리 여친 (namuri_girlfriend) | 5 | 3 | 3 | 12 |
+| 불꼬리 (bulkkori) | 0 | 3 | 3 | 7 |
+| 흙순이 (heuksuni) | 5 | 5 | 5 | 16 |
+| 쇠동이 (soedongi) | 6 | 3 | 3 | 13 |
+| 물결이 (mulgyeori) | 5 | 3 | 3 | 12 |
+| 황금토끼 (gold_tokki) | 10 | 4 | 3 | 18 |
+| 검은토끼 (black_tokki) | 5 | 3 | 3 | 12 |
+| **합계** | **42** | **27** | **26** | **103** |
+
+> **참고**: 불꼬리(bulkkori)는 expressions 폴더가 없음. 추후 표정 에셋 보강 필요.

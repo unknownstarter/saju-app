@@ -60,7 +60,37 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/characters/
+    - assets/images/characters/namuri/
+    - assets/images/characters/namuri/expressions/
+    - assets/images/characters/namuri/poses/
+    - assets/images/characters/namuri/views/
+    - assets/images/characters/namuri_girlfriend/
+    - assets/images/characters/namuri_girlfriend/expressions/
+    - assets/images/characters/namuri_girlfriend/poses/
+    - assets/images/characters/namuri_girlfriend/views/
+    - assets/images/characters/bulkkori/
+    - assets/images/characters/bulkkori/poses/
+    - assets/images/characters/bulkkori/views/
+    - assets/images/characters/heuksuni/
+    - assets/images/characters/heuksuni/expressions/
+    - assets/images/characters/heuksuni/poses/
+    - assets/images/characters/heuksuni/views/
+    - assets/images/characters/soedongi/
+    - assets/images/characters/soedongi/expressions/
+    - assets/images/characters/soedongi/poses/
+    - assets/images/characters/soedongi/views/
+    - assets/images/characters/mulgyeori/
+    - assets/images/characters/mulgyeori/expressions/
+    - assets/images/characters/mulgyeori/poses/
+    - assets/images/characters/mulgyeori/views/
+    - assets/images/characters/gold_tokki/
+    - assets/images/characters/gold_tokki/expressions/
+    - assets/images/characters/gold_tokki/poses/
+    - assets/images/characters/gold_tokki/views/
+    - assets/images/characters/black_tokki/
+    - assets/images/characters/black_tokki/expressions/
+    - assets/images/characters/black_tokki/poses/
+    - assets/images/characters/black_tokki/views/
 
   fonts:
     - family: Pretendard

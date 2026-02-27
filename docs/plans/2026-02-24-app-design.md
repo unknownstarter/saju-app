@@ -168,6 +168,36 @@
 | **에러 상태** | 캐릭터 당황/사과 | "앗, 다시 해볼까?" |
 | **결제 화면** | 아이템 착용 미리보기 | 구매 욕구 자극 |
 
+### 4.7 캐릭터 에셋 구조 (2026-02-27 갱신)
+
+```
+assets/images/characters/
+├── {character}/
+│   ├── default.png          ← 기본 (앱 전역 사용)
+│   ├── expressions/         ← 표정별 개별 이미지
+│   │   ├── default.png, laugh.png, love.png, sad.png, ...
+│   ├── poses/              ← 포즈별 개별 이미지
+│   │   ├── standing.png, sitting.png, waving.png, ...
+│   └── views/              ← 방향별 (정면/측면/후면)
+│       ├── front.png, side.png, back.png
+```
+
+**캐릭터 목록** (8종):
+namuri(나무리/木), namuri_girlfriend(나무리 여친), bulkkori(불꼬리/火), heuksuni(흙순이/土), soedongi(쇠동이/金), mulgyeori(물결이/水), gold_tokki(황금토끼), black_tokki(검은토끼)
+
+**코드 접근**:
+```dart
+CharacterAssets.namuri.expression('love')   // 하트눈
+CharacterAssets.soedongi.pose('sitting')    // 앉기
+CharacterAssets.pathFor(FiveElementType.water).view('front')  // 물결이 정면
+```
+
+**에셋 관리 규칙**:
+- 원본 스프라이트 시트 → connected component analysis로 개별 PNG 자동 분리
+- 배경 제거(누끼): rembg 사용, 텍스트 포함 시 "흰색 덮기 → 누끼" 방식
+- 네이밍: `{romanized_name}/{variant}/{descriptor}.png`
+- 총 103개 개별 파일 (2026-02-27 기준)
+
 ---
 
 ## 5. BM 구조: 포인트 기반 개별과금
@@ -554,7 +584,7 @@ feature/
 
 ---
 
-## 12. 다음 할 일 / 백로그 (2026-02-26 갱신)
+## 12. 다음 할 일 / 백로그 (2026-02-27 갱신)
 
 **다른 디바이스에서 연속 작업 시**: 우선 **테스크 마스터**를 확인하세요.
 
@@ -564,7 +594,10 @@ feature/
 | dev-log | `docs/dev-log/2026-02-24-progress.md` — 완료 내역, 레슨런, 아키텍처 현황 |
 | CLAUDE.md | 개발자룰·아키텍처·연속 작업 규칙 |
 
-**최근 완료 (2026-02-26):**
+**최근 완료 (2026-02-27):**
+- 캐릭터 에셋 체계화 (C1~C6) — 누끼 재작업, 스프라이트 분리(103개), 폴더 구조화, CharacterPath 헬퍼
+
+**이전 완료 (2026-02-26):**
 - 통합 사주+관상 온보딩 플로우 (D1~D6) — 하나의 퍼널, 탭 결과
 - 토스 UX 리팩토링 (U1~U6) — 한 화면 하나 + 햅틱 + 스켈레톤
 - 온보딩 리팩토링 (R1~R9) — 12단계→6단계, 관상 홈 넛지 분리

@@ -159,12 +159,16 @@ feature/
 - E2E: `integration_test` (핵심 플로우)
 - 도메인 레이어 테스트 커버리지 80%+ 목표
 
-### 에셋 관리 (2026-02-24 추가)
-- 캐릭터 에셋: `assets/images/characters/` 디렉토리
-- 네이밍 컨벤션: `{romanized_name}_{variant}.png` (예: `namuri_wood_default.png`)
-- variant 종류: `default`, `expressions`, `poses`, `turnaround`
+### 에셋 관리 (2026-02-27 갱신)
+- 캐릭터 에셋: `assets/images/characters/{character}/{variant}/` 디렉토리
+- **폴더 구조**: `{character}/default.png`, `{character}/expressions/*.png`, `{character}/poses/*.png`, `{character}/views/*.png`
+- 코드 접근: `CharacterAssets.namuri.expression('love')` 또는 기존 `CharacterAssets.namuriWoodDefault`
 - **[규칙]** 에셋 경로를 코드에 하드코딩할 때 반드시 실제 파일 목록과 대조 검증
-- **[규칙]** 새 캐릭터 이미지 추가 시: 배경 제거(누끼) → 네이밍 컨벤션 적용 → Mock 데이터 반영
+- **[규칙]** 새 캐릭터 추가 시: 스프라이트 시트 → rembg 누끼 → scipy 개별 분리 → 폴더 구조 배치
+- **[규칙]** 연한 색 캐릭터 누끼: "캐릭터 외 영역 흰색 덮기 → rembg" 방식 사용
+- **[규칙]** pubspec.yaml에 새 캐릭터 폴더 4개(root, expressions, poses, views) 등록 필수
+- **[규칙]** `static final` vs `const`: CharacterPath 헬퍼의 getter는 const가 아님 → 기존 const 컨텍스트 호환 위해 `static const` 문자열 병행 유지
+- **[규칙]** 에셋 추가/변경 후 `flutter clean` + full rebuild 필수 (hot reload 불반영)
 
 ### UI 디자인 원칙 (2026-02-24 추가)
 - 토스 스타일 미니멀: 타이포 위계, 넉넉한 여백(20-32px), 얇은 보더, 색 절제

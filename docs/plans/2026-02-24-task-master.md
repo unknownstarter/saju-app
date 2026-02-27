@@ -1,6 +1,6 @@
-# 테스크 마스터 — 2026-02-26 (v5)
+# 테스크 마스터 — 2026-02-27 (v6)
 
-> **작성일**: 2026-02-24 | **갱신**: 2026-02-26
+> **작성일**: 2026-02-24 | **갱신**: 2026-02-27
 > **목적**: 다음에 할 일을 한곳에 정리해, 다른 디바이스에서 보고 연속으로 작업할 수 있게 함.
 > **참조**: PRD `docs/plans/2026-02-24-app-design.md`, 개선 제안서 `docs/plans/2026-02-24-saju-궁합-engine-improvement-proposal.md`, dev-log `docs/dev-log/2026-02-24-progress.md`
 
@@ -114,6 +114,17 @@
 - `onboarding_page.dart` — destinyAnalysis 라우팅
 - `app_constants.dart` — destinyAnalysis/destinyResult 상수
 - `app_router.dart` — destiny 라우트 2개 등록
+
+### 2026-02-27
+
+| # | 항목 | 상태 |
+|---|------|------|
+| C1 | 나무리 캐릭터 누끼 + 영문 네이밍 적용 (4종: default/expressions/poses/turnaround) | ✅ |
+| C2 | 나무리 여친 + 쇠동이 재누끼 (텍스트 제거 포함, 6종) | ✅ |
+| C3 | 전 캐릭터(8종) 스프라이트 시트 → 개별 PNG 분리 (103개 파일) | ✅ |
+| C4 | 캐릭터 에셋 폴더 구조 체계화 (`{char}/{variant}/`) | ✅ |
+| C5 | `CharacterPath` 헬퍼 클래스 + `CharacterAssets` 리팩토링 | ✅ |
+| C6 | pubspec.yaml 에셋 경로 + 빌드 검증 (0 errors) | ✅ |
 
 ### 기존 (High) — 매칭·궁합 실데이터 연동
 

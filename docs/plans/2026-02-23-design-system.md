@@ -152,6 +152,67 @@
 - 라이트(캐주얼): 평상복, 밝은 표정
 - 다크(신비): 도사 모자/두루마기, 오행 오라 이펙트
 
+### 에셋 폴더 구조 (2026-02-27 리팩토링)
+
+기존 플랫 스프라이트 시트에서 **개별 파일 폴더 구조**로 전면 전환.
+총 8캐릭터, 103개 개별 PNG.
+
+```
+assets/images/characters/
+├── namuri/
+│   ├── default.png              # 정면 기본
+│   ├── expressions/             # 개별 표정
+│   │   ├── default.png
+│   │   ├── laugh.png
+│   │   ├── surprised.png
+│   │   ├── angry.png
+│   │   ├── sad.png
+│   │   └── love.png
+│   ├── poses/                   # 개별 포즈
+│   │   ├── standing.png
+│   │   ├── sitting.png
+│   │   └── waving.png
+│   └── views/                   # 방향별
+│       ├── front.png
+│       ├── side.png
+│       └── back.png
+├── namuri_girlfriend/
+├── bulkkori/
+├── heuksuni/
+├── soedongi/
+├── mulgyeori/
+├── gold_tokki/
+└── black_tokki/
+```
+
+**코드 API**: `CharacterAssets.namuri.expression('love')` 방식으로 개별 에셋 접근.
+
+### 캐릭터 에셋 활용 가이드 (2026-02-27 추가)
+
+**개별 표정 활용 시나리오**:
+
+| 상황 | 표정 | 코드 |
+|------|------|------|
+| 매칭 성공 | love (하트눈) | `CharacterAssets.namuri.expression('love')` |
+| 궁합 낮음 | sad (슬픔) | `CharacterAssets.namuri.expression('sad')` |
+| 채팅 대기 | sitting (앉기) | `CharacterAssets.namuri.pose('sitting')` |
+| 프로필 카드 | front (정면) | `CharacterAssets.namuri.view('front')` |
+| 에러 상태 | surprised (놀람) | `CharacterAssets.namuri.expression('surprised')` |
+| 로딩 중 | default (기본) | `CharacterAssets.namuri.defaultImage` |
+
+**캐릭터별 에셋 보유 현황** (2026-02-27):
+
+| 캐릭터 | 표정 | 포즈 | 뷰 | 비고 |
+|--------|------|------|-----|------|
+| 나무리 | 6 (default, laugh, surprised, angry, sad, love) | 3 | 3 | 기본 오행 木 |
+| 나무리 여친 | 5 (default, laugh, surprised, sad, love) | 3 | 3 | |
+| 불꼬리 | 0 | 3 | 3 | expressions 미보유 |
+| 흙순이 | 5 (default, laugh, surprised, sad, love) | 5 (standing, sitting, waving, cross_legs, content) | 5 (front, side, back, side_sitting, back_sitting) | 가장 다양 |
+| 쇠동이 | 6 (default, laugh, surprised, angry, sad, love) | 3 | 3 | |
+| 물결이 | 5 (default, laugh, surprised, sad, love) | 3 | 3 | |
+| 황금토끼 | 10 (default, laugh, angry, annoyed, confused, content, happy, questioning, thinking, waving) | 4 (standing, excited, lying, resting) | 3 | 표정 최다 |
+| 검은토끼 | 5 (default, laugh, surprised, sad, love) | 3 | 3 | |
+
 ---
 
 ## 6. 모션 원칙
