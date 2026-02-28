@@ -14,6 +14,9 @@ class MatchProfile {
     required this.elementType,
     required this.compatibilityScore,
     this.animalType,
+    this.animalModifier,
+    this.animalTypeKorean,
+    this.gwansangTraits,
   });
 
   /// 사용자 고유 ID
@@ -43,8 +46,17 @@ class MatchProfile {
   /// 궁합 점수 (0~100)
   final int compatibilityScore;
 
-  /// 동물상 타입 (관상 분석 완료 시). null이면 관상 미완료.
+  /// 닮은 동물 (관상 분석 완료 시). 예: "cat", "fox"
   final String? animalType;
+
+  /// 동물 수식어 (관상 분석 완료 시). 예: "나른한", "배고픈"
+  final String? animalModifier;
+
+  /// 동물 한글명 (관상 분석 완료 시). 예: "고양이", "여우"
+  final String? animalTypeKorean;
+
+  /// 관상 traits 5축 (궁합 계산용)
+  final Map<String, int>? gwansangTraits;
 
   @override
   bool operator ==(Object other) =>

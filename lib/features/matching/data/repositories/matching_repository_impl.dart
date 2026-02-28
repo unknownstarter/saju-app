@@ -30,6 +30,9 @@ const _mockProfiles = <MatchProfile>[
     elementType: 'water',
     compatibilityScore: 92,
     animalType: 'wolf',
+    animalModifier: '깊은 눈의',
+    animalTypeKorean: '늑대',
+    gwansangTraits: {'leadership': 45, 'warmth': 80, 'independence': 70, 'sensitivity': 85, 'energy': 40},
   ),
   MatchProfile(
     userId: 'mock-user-002',
@@ -41,6 +44,9 @@ const _mockProfiles = <MatchProfile>[
     elementType: 'fire',
     compatibilityScore: 78,
     animalType: 'fox',
+    animalModifier: '장난기 가득한',
+    animalTypeKorean: '여우',
+    gwansangTraits: {'leadership': 60, 'warmth': 75, 'independence': 55, 'sensitivity': 70, 'energy': 85},
   ),
   MatchProfile(
     userId: 'mock-user-003',
@@ -62,6 +68,9 @@ const _mockProfiles = <MatchProfile>[
     elementType: 'earth',
     compatibilityScore: 54,
     animalType: 'rabbit',
+    animalModifier: '수줍은',
+    animalTypeKorean: '토끼',
+    gwansangTraits: {'leadership': 35, 'warmth': 90, 'independence': 40, 'sensitivity': 80, 'energy': 50},
   ),
   MatchProfile(
     userId: 'mock-user-005',
@@ -73,6 +82,9 @@ const _mockProfiles = <MatchProfile>[
     elementType: 'metal',
     compatibilityScore: 45,
     animalType: 'tiger',
+    animalModifier: '당당한',
+    animalTypeKorean: '호랑이',
+    gwansangTraits: {'leadership': 90, 'warmth': 40, 'independence': 85, 'sensitivity': 30, 'energy': 80},
   ),
   MatchProfile(
     userId: 'mock-user-006',
@@ -94,6 +106,9 @@ const _mockProfiles = <MatchProfile>[
     elementType: 'water',
     compatibilityScore: 71,
     animalType: 'snake',
+    animalModifier: '신비로운',
+    animalTypeKorean: '뱀',
+    gwansangTraits: {'leadership': 50, 'warmth': 55, 'independence': 75, 'sensitivity': 90, 'energy': 35},
   ),
 ];
 
