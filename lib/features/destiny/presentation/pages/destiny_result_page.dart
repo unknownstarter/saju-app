@@ -688,6 +688,14 @@ class _GwansangTab extends StatelessWidget {
         _buildCharmKeywords(context),
         SajuSpacing.gap24,
 
+        // 삼정(三停) 요약
+        _buildSamjeongSummary(context, colors),
+        SajuSpacing.gap24,
+
+        // 오관(五官) 하이라이트
+        _buildOgwanHighlight(context, colors),
+        SajuSpacing.gap24,
+
         // 성격 요약
         _buildSectionCard(context, '성격', profile.personalitySummary, colors),
         SajuSpacing.gap24,
@@ -700,8 +708,8 @@ class _GwansangTab extends StatelessWidget {
         _buildRomanceKeyPointsCard(context, colors),
         SajuSpacing.gap24,
 
-        // 관상 궁합
-        _buildGwansangCompatCard(context, colors),
+        // 성격 특성 5축 바 차트
+        _buildTraitsChart(context, colors),
 
         // 하단 여백
         const SizedBox(height: SajuSpacing.space48),
@@ -840,27 +848,179 @@ class _GwansangTab extends StatelessWidget {
     );
   }
 
-  Widget _buildGwansangCompatCard(BuildContext context, SajuColors colors) {
+  Widget _buildSamjeongSummary(BuildContext context, SajuColors colors) {
+    final zones = [
+      ('초년운', profile.samjeong.upper),
+      ('중년운', profile.samjeong.middle),
+      ('말년운', profile.samjeong.lower),
+    ];
+
     return SajuCard(
       variant: SajuVariant.flat,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '관상 궁합',
+            '삼정(三停) 운세',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
           ),
-          SajuSpacing.gap8,
+          SajuSpacing.gap12,
+          ...zones.map((zone) {
+            final (label, reading) = zone;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SajuBadge(
+                    label: label,
+                    color: SajuColor.primary,
+                    size: SajuSize.xs,
+                  ),
+                  SajuSpacing.hGap8,
+                  Expanded(
+                    child: Text(
+                      reading,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.textSecondary,
+                            height: 1.5,
+                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOgwanHighlight(BuildContext context, SajuColors colors) {
+    final features = [
+      ('눈', profile.ogwan.eyes),
+      ('코', profile.ogwan.nose),
+      ('입', profile.ogwan.mouth),
+    ];
+
+    return SajuCard(
+      variant: SajuVariant.flat,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            '매칭된 상대방과의 관상 궁합은 매칭 화면에서 확인하세요!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.textSecondary,
-                  height: 1.5,
+            '오관(五官) 해석',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
           ),
+          SajuSpacing.gap12,
+          ...features.map((f) {
+            final (label, reading) = f;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.mysticAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    reading,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.textSecondary,
+                          height: 1.5,
+                        ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTraitsChart(BuildContext context, SajuColors colors) {
+    final axes = [
+      ('리더십', profile.traits.leadership),
+      ('온화함', profile.traits.warmth),
+      ('독립성', profile.traits.independence),
+      ('감성', profile.traits.sensitivity),
+      ('에너지', profile.traits.energy),
+    ];
+
+    return SajuCard(
+      variant: SajuVariant.flat,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '성격 특성',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          SajuSpacing.gap12,
+          ...axes.map((a) {
+            final (label, value) = a;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 48,
+                    child: Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: LinearProgressIndicator(
+                        value: value / 100,
+                        minHeight: 5,
+                        backgroundColor:
+                            colors.textTertiary.withValues(alpha: 0.12),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.mysticAccent.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SajuSpacing.hGap8,
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '$value',
+                      textAlign: TextAlign.end,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
