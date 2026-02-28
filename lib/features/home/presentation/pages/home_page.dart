@@ -9,7 +9,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../matching/domain/entities/match_profile.dart';
-import '../../../matching/presentation/pages/compatibility_preview_page.dart';
 import '../../../matching/presentation/providers/matching_provider.dart';
 
 /// HomePage — 홈 탭 (2026-02-28 리디자인)
@@ -132,7 +131,6 @@ class HomePage extends ConsumerWidget {
                       ),
                       data: (profiles) => _RecommendationGrid(
                         profiles: profiles,
-                        ref: ref,
                       ),
                     ),
                   ],
@@ -245,11 +243,9 @@ class HomePage extends ConsumerWidget {
 class _RecommendationGrid extends StatelessWidget {
   const _RecommendationGrid({
     required this.profiles,
-    required this.ref,
   });
 
   final List<MatchProfile> profiles;
-  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +285,10 @@ class _RecommendationGrid extends StatelessWidget {
             elementType: profile.elementType,
             compatibilityScore: profile.compatibilityScore,
             showCharacterInstead: true,
-            onTap: () => showCompatibilityPreview(context, ref, profile),
+            onTap: () => context.push(
+              RoutePaths.profileDetail,
+              extra: profile,
+            ),
           );
         },
       ),

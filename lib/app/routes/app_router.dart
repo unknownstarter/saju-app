@@ -29,6 +29,8 @@ import '../../features/gwansang/presentation/pages/gwansang_photo_page.dart';
 import '../../features/gwansang/presentation/pages/gwansang_result_page.dart';
 import '../../features/destiny/presentation/pages/destiny_analysis_page.dart';
 import '../../features/destiny/presentation/pages/destiny_result_page.dart';
+import '../../features/matching/presentation/pages/profile_detail_page.dart';
+import '../../features/matching/domain/entities/match_profile.dart';
 import '../../features/saju/presentation/pages/saju_analysis_page.dart';
 import '../../features/saju/presentation/pages/saju_result_page.dart';
 import '../../features/saju/presentation/providers/saju_provider.dart';
@@ -101,6 +103,7 @@ GoRouter appRouter(Ref ref) {
         RoutePaths.gwansangAnalysis,
         RoutePaths.gwansangResult,
         RoutePaths.postAnalysisMatches,
+        RoutePaths.profileDetail,
       ];
       final isPublicPath = publicPaths.contains(currentPath);
 
@@ -335,6 +338,16 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) {
           final result = state.extra;
           return GwansangResultPage(result: result);
+        },
+      ),
+
+      // 프로필 상세 (블러 사진 + 캐릭터 + 궁합)
+      GoRoute(
+        path: RoutePaths.profileDetail,
+        name: RouteNames.profileDetail,
+        builder: (context, state) {
+          final profile = state.extra as MatchProfile;
+          return ProfileDetailPage(profile: profile);
         },
       ),
 
