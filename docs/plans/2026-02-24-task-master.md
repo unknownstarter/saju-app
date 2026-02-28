@@ -1,8 +1,102 @@
-# 테스크 마스터 — 2026-02-28 (v8)
+# 테스크 마스터 — 2026-03-01 (v9)
 
-> **작성일**: 2026-02-24 | **갱신**: 2026-02-28
+> **작성일**: 2026-02-24 | **갱신**: 2026-03-01
 > **목적**: 다음에 할 일을 한곳에 정리해, 다른 디바이스에서 보고 연속으로 작업할 수 있게 함.
 > **참조**: PRD `docs/plans/2026-02-24-app-design.md`, 개선 제안서 `docs/plans/2026-02-24-saju-궁합-engine-improvement-proposal.md`, dev-log `docs/dev-log/2026-02-24-progress.md`
+
+---
+
+## 0. 새 디바이스 셋업 가이드
+
+> 다른 맥에서 이어서 작업할 때 이 섹션을 먼저 확인.
+
+### 필수 환경
+
+| 도구 | 최소 버전 | 현재 검증 버전 | 비고 |
+|------|----------|---------------|------|
+| **Flutter** | 3.38+ | 3.41.2 (stable) | `flutter doctor`로 확인 |
+| **Dart SDK** | ^3.10.0 | 3.11.0 | Flutter에 포함 |
+| **Xcode** | 16+ | 26.2 | iOS 빌드 필수 |
+| **CocoaPods** | 1.14+ | 1.16.2 | `sudo gem install cocoapods` |
+| **Node.js** | 20+ | 25.4.0 | Supabase Edge Functions 로컬 테스트용 |
+| **Supabase CLI** | 2.0+ | 2.75.0 | `brew install supabase/tap/supabase` |
+| **Ruby** | 2.6+ | 2.6.10 | CocoaPods 의존 (macOS 기본) |
+
+> **Deno**: 로컬 미설치 상태 (Edge Function은 Supabase 클라우드에서 실행). 로컬 테스트하려면 `brew install deno`.
+
+### 클론 후 바로 실행하기
+
+```bash
+# 1. 레포 클론
+git clone https://github.com/unknownstarter/momo-app.git momo
+cd momo
+
+# 2. Flutter 의존성
+flutter pub get
+
+# 3. iOS 의존성 (최초 1회)
+cd ios && pod install && cd ..
+
+# 4. 코드 생성 (freezed/riverpod/json_serializable)
+dart run build_runner build --delete-conflicting-outputs
+
+# 5. 빌드 검증
+flutter analyze lib/          # 0 errors 확인
+flutter build ios --no-codesign --debug   # iOS 빌드 확인
+```
+
+### 핵심 의존성 (pubspec.yaml)
+
+| 카테고리 | 패키지 | 버전 |
+|---------|--------|------|
+| 상태관리 | `flutter_riverpod` | ^2.6.1 |
+| 라우팅 | `go_router` | ^14.8.1 |
+| Backend | `supabase_flutter` | ^2.9.0 |
+| 코드 생성 | `freezed` / `json_serializable` | ^2.5.7 / ^6.9.4 |
+| 관상 ML | `google_mlkit_face_detection` | ^0.13.2 |
+| 이미지 | `image_picker` / `image_cropper` | ^1.1.2 / ^8.0.2 |
+| 결제 | `purchases_flutter` (RevenueCat) | ^8.4.1 |
+| 소셜로그인 | `sign_in_with_apple` / `google_sign_in` | ^6.1.4 / ^6.2.2 |
+
+### 플랫폼 설정
+
+| 항목 | 값 |
+|------|-----|
+| iOS minimum | 16.0 |
+| Android SDK | Flutter 기본값 (compileSdk/minSdk/targetSdk) |
+| 폰트 | Pretendard (Regular/Medium/SemiBold/Bold) — `assets/fonts/` |
+
+### Supabase 프로젝트
+
+| 항목 | 값 |
+|------|-----|
+| Project ID | `csjdfvxyjnpmbkjbomyf` |
+| 로컬 config | `supabase/config.toml` (project_id: momo-app) |
+| Edge Functions | `supabase/functions/` 디렉토리 |
+| 주요 함수 | `calculate-saju`, `calculate-compatibility`, `generate-gwansang-reading` |
+
+### 현재 디버그 바이패스 (6건)
+
+> Auth 미연동 상태에서 테스트하기 위한 바이패스. Sprint A에서 제거 예정.
+> 검색: `TODO(PROD)` 또는 `BYPASS-N`
+> 상세 문서: `docs/dev-log/2026-02-26-debug-bypass.md`
+
+| ID | 위치 | 역할 |
+|----|------|------|
+| BYPASS-1 | `login_page.dart:87` | 로그인 실패 → 온보딩 직행 |
+| BYPASS-2 | `onboarding_page.dart:113` | 프로필 저장 실패 → Mock 분석 진행 |
+| BYPASS-3 | `destiny_analysis_page.dart:238` | 사주 분석 실패 → Mock 결과 |
+| BYPASS-4 | `destiny_analysis_page.dart:259` | 관상 분석 실패 → Mock 결과 |
+| BYPASS-5 | `matching_profile_page.dart:320` | 프로필 저장 실패 → 매칭 직행 |
+| BYPASS-6 | `app_router.dart:93-95` | matching/chat/profile 비로그인 접근 허용 |
+
+### 현재 앱 상태 요약 (2026-03-01)
+
+- **작동하는 것**: 온보딩 → 사주+관상 통합 분석(Mock) → 결과(탭) → 홈(추천 그리드) → 프로필 상세(블러) → 궁합 프리뷰(실연동 가능)
+- **Mock인 것**: 로그인, 프로필 저장, 사주/관상 AI 분석, 추천 목록, 좋아요
+- **실연동된 것**: `calculate-compatibility` Edge Function (궁합 계산, Mock 파트너일 때는 로컬 Mock 사용)
+- **직전 완료**: Sprint 0 (관상 시스템 재설계 — 삼정/오관/traits 5축)
+- **다음 작업**: Sprint A (Auth 실연동 = 전체 블로커)
 
 ---
 
