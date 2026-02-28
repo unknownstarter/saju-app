@@ -61,6 +61,8 @@ class SajuMatchCard extends StatefulWidget {
     this.isPremium = false,
     this.isDisabled = false,
     this.isLoading = false,
+    this.showCharacterInstead = false,
+    this.isNew = false,
     this.onTap,
     this.width,
     this.height,
@@ -77,6 +79,8 @@ class SajuMatchCard extends StatefulWidget {
   final bool isPremium;
   final bool isDisabled;
   final bool isLoading;
+  final bool showCharacterInstead;
+  final bool isNew;
   final VoidCallback? onTap;
   final double? width;
   final double? height;
@@ -171,33 +175,57 @@ class _SajuMatchCardState extends State<SajuMatchCard> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Photo or placeholder
-        widget.photoUrl != null
-            ? Image.network(
+        // Photo or character placeholder
+        (widget.showCharacterInstead || widget.photoUrl == null)
+            ? _buildPlaceholder(elementColor, elementPastel)
+            : Image.network(
                 widget.photoUrl!,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => _buildPlaceholder(elementColor, elementPastel),
-              )
-            : _buildPlaceholder(elementColor, elementPastel),
-        // Element badge (top-left)
+              ),
+        // Element badge + NEW badge (top-left)
         Positioned(
           top: SajuSpacing.space8,
           left: SajuSpacing.space8,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-            ),
-            child: Text(
-              _elementLabel(widget.elementType),
-              style: TextStyle(
-                fontFamily: AppTheme.fontFamily,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: elementColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                ),
+                child: Text(
+                  _elementLabel(widget.elementType),
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: elementColor,
+                  ),
+                ),
               ),
-            ),
+              if (widget.isNew) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: AppTheme.fireColor,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  ),
+                  child: const Text(
+                    'NEW',
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         // Score badge (top-right)
