@@ -53,17 +53,23 @@ class GwansangRepositoryImpl implements GwansangRepository {
 
     // Step 3: DB에 관상 프로필 저장 (upsert)
     final animalType = reading['animal_type'] as String? ?? 'cat';
+    final animalModifier = reading['animal_modifier'] as String? ?? '';
+    final animalTypeKorean = reading['animal_type_korean'] as String? ?? '';
     final dbData = <String, dynamic>{
       'user_id': userId,
       'animal_type': animalType,
+      'animal_modifier': animalModifier,
+      'animal_type_korean': animalTypeKorean,
       'face_measurements': measurements.toJson(),
       'photo_urls': photoUrls,
       'headline': reading['headline'] ?? '',
+      'samjeong': reading['samjeong'] ?? <String, dynamic>{},
+      'ogwan': reading['ogwan'] ?? <String, dynamic>{},
+      'traits': reading['traits'] ?? <String, dynamic>{},
       'personality_summary': reading['personality_summary'] ?? '',
       'romance_summary': reading['romance_summary'] ?? '',
-      'saju_synergy': reading['saju_synergy'] ?? '',
+      'romance_key_points': reading['romance_key_points'] ?? <String>[],
       'charm_keywords': reading['charm_keywords'] ?? <String>[],
-      'element_modifier': reading['element_modifier'],
       'detailed_reading': reading['detailed_reading'],
       'created_at': DateTime.now().toUtc().toIso8601String(),
     };
