@@ -1,8 +1,8 @@
-/// 관상 결과 페이지 — 동물상 리빌 + 분석 결과 화면
+/// 관상 결과 페이지 — 동물상 리빌 + 관상학 해석 결과
 ///
 /// **이 앱의 와우 모먼트!** 바이럴의 핵심 포인트.
-/// 동물상 이모지 대형 리빌 → 매력 키워드 → 성격/연애/시너지 카드
-/// → 찰떡/밀당 궁합 동물 → 공유 CTA.
+/// 동물상 리빌 → 매력 키워드 → 삼정(三停) → 오관(五官)
+/// → 성격/연애 → traits 5축 → 공유 CTA.
 /// 다크 테마(미스틱 모드), 스태거드 페이드인 애니메이션.
 library;
 
@@ -153,7 +153,7 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
     with SingleTickerProviderStateMixin {
   static const _duration = Duration(milliseconds: 1400);
   static const _stagger = 0.12;
-  static const _sectionCount = 8;
+  static const _sectionCount = 10;
 
   late final AnimationController _controller;
   late final List<Animation<double>> _fades;
@@ -210,15 +210,19 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
       _buildHeadline(context, profile, colors),
       // 3. 매력 키워드 칩
       _buildCharmKeywords(context, profile),
-      // 4. 성격 요약 카드
+      // 4. 삼정(三停) — 인생 3막
+      _buildSamjeongCard(context, profile, colors),
+      // 5. 오관(五官) — 얼굴이 말하는 것
+      _buildOgwanCard(context, profile, colors),
+      // 6. 성격 요약 카드
       _buildSectionCard(context, '성격', profile.personalitySummary, colors),
-      // 5. 연애 스타일 카드
+      // 7. 연애 스타일 카드
       _buildSectionCard(context, '연애 스타일', profile.romanceSummary, colors),
-      // 6. 연애 핵심 포인트
+      // 8. 연애 핵심 포인트
       _buildRomanceKeyPointsCard(context, profile, colors),
-      // 7. 관상 궁합
-      _buildGwansangCompatCard(context, colors),
-      // 8. 액션 버튼
+      // 9. 성격 traits 5축
+      _buildTraitsChart(context, profile, colors),
+      // 10. CTA 액션 버튼
       _buildActions(context, profile.photoUrls),
     ];
 
@@ -337,7 +341,183 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
   }
 
   // ===========================================================================
-  // 4-5. 섹션 카드 (성격 / 연애 스타일)
+  // 4. 삼정(三停) — 인생 3막
+  // ===========================================================================
+
+  Widget _buildSamjeongCard(
+    BuildContext context,
+    GwansangProfile profile,
+    SajuColors colors,
+  ) {
+    final samjeong = profile.samjeong;
+    final zones = [
+      ('상정 · 초년운', '이마~눈썹', samjeong.upper, Icons.school_outlined),
+      ('중정 · 중년운', '눈썹~코끝', samjeong.middle, Icons.work_outline),
+      ('하정 · 말년운', '코끝~턱', samjeong.lower, Icons.home_outlined),
+    ];
+
+    return SajuCard(
+      variant: SajuVariant.elevated,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.face_outlined, size: 18, color: AppTheme.mysticGlow),
+              SajuSpacing.hGap8,
+              Text(
+                '삼정(三停) — 인생 3막',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+          SajuSpacing.gap16,
+          ...zones.map((zone) {
+            final (title, area, reading, icon) = zone;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppTheme.mysticGlow.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 18, color: AppTheme.mysticGlow),
+                  ),
+                  SajuSpacing.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              title,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: colors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            SajuSpacing.hGap8,
+                            Text(
+                              area,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: colors.textTertiary,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reading,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: colors.textSecondary,
+                                height: 1.6,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 5. 오관(五官) — 얼굴이 말하는 것
+  // ===========================================================================
+
+  Widget _buildOgwanCard(
+    BuildContext context,
+    GwansangProfile profile,
+    SajuColors colors,
+  ) {
+    final ogwan = profile.ogwan;
+    final features = [
+      ('눈 · 감찰관', ogwan.eyes, '👁️'),
+      ('코 · 심판관', ogwan.nose, '👃'),
+      ('입 · 출납관', ogwan.mouth, '👄'),
+      ('귀 · 채청관', ogwan.ears, '👂'),
+      ('눈썹 · 보수관', ogwan.eyebrows, '✨'),
+    ];
+
+    return SajuCard(
+      variant: SajuVariant.elevated,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.visibility_outlined, size: 18, color: AppTheme.mysticGlow),
+              SajuSpacing.hGap8,
+              Text(
+                '오관(五官) — 얼굴이 말하는 것',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+          SajuSpacing.gap16,
+          ...features.map((feature) {
+            final (title, reading, emoji) = feature;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(emoji, style: const TextStyle(fontSize: 16)),
+                      SajuSpacing.hGap8,
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.mysticGlow,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    reading,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colors.textSecondary,
+                          height: 1.6,
+                        ),
+                  ),
+                  if (feature != features.last)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Divider(
+                        height: 1,
+                        color: colors.textTertiary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 6-7. 섹션 카드 (성격 / 연애 스타일)
   // ===========================================================================
 
   Widget _buildSectionCard(
@@ -372,7 +552,7 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
   }
 
   // ===========================================================================
-  // 6. 연애 핵심 포인트
+  // 8. 연애 핵심 포인트
   // ===========================================================================
 
   Widget _buildRomanceKeyPointsCard(
@@ -424,40 +604,93 @@ class _ResultRevealContentState extends State<_ResultRevealContent>
   }
 
   // ===========================================================================
-  // 7. 관상 궁합
+  // 9. 성격 traits 5축
   // ===========================================================================
 
-  Widget _buildGwansangCompatCard(
+  Widget _buildTraitsChart(
     BuildContext context,
+    GwansangProfile profile,
     SajuColors colors,
   ) {
+    final traits = profile.traits;
+    final axes = [
+      ('리더십', traits.leadership, Icons.military_tech_outlined),
+      ('온화함', traits.warmth, Icons.favorite_border),
+      ('독립성', traits.independence, Icons.shield_outlined),
+      ('감성', traits.sensitivity, Icons.auto_awesome_outlined),
+      ('에너지', traits.energy, Icons.bolt_outlined),
+    ];
+
     return SajuCard(
-      variant: SajuVariant.flat,
+      variant: SajuVariant.elevated,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '관상 궁합',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+          Row(
+            children: [
+              Icon(Icons.insights_outlined, size: 18, color: AppTheme.mysticGlow),
+              SajuSpacing.hGap8,
+              Text(
+                '성격 특성 5축',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
           ),
-          SajuSpacing.gap8,
-          Text(
-            '매칭된 상대방과의 관상 궁합은 매칭 화면에서 확인하세요!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.textSecondary,
-                  height: 1.5,
-                ),
-          ),
+          SajuSpacing.gap16,
+          ...axes.map((axis) {
+            final (label, value, icon) = axis;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(icon, size: 16, color: colors.textSecondary),
+                      SajuSpacing.hGap8,
+                      Text(
+                        label,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$value',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.mysticGlow,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: value / 100,
+                      minHeight: 6,
+                      backgroundColor: colors.textTertiary.withValues(alpha: 0.15),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.mysticGlow.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
   // ===========================================================================
-  // 8. 액션 버튼
+  // 10. 액션 버튼
   // ===========================================================================
 
   Widget _buildActions(BuildContext context, List<String> photoUrls) {
