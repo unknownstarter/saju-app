@@ -1,6 +1,6 @@
-# 테스크 마스터 — 2026-02-27 (v6)
+# 테스크 마스터 — 2026-02-28 (v8)
 
-> **작성일**: 2026-02-24 | **갱신**: 2026-02-27
+> **작성일**: 2026-02-24 | **갱신**: 2026-02-28
 > **목적**: 다음에 할 일을 한곳에 정리해, 다른 디바이스에서 보고 연속으로 작업할 수 있게 함.
 > **참조**: PRD `docs/plans/2026-02-24-app-design.md`, 개선 제안서 `docs/plans/2026-02-24-saju-궁합-engine-improvement-proposal.md`, dev-log `docs/dev-log/2026-02-24-progress.md`
 
@@ -241,6 +241,8 @@
 | `docs/plans/2026-02-24-phase1-calculate-compatibility-spec.md` | 궁합 API 스펙·배점·규칙집 |
 | `docs/plans/2026-02-25-gwansang-implementation.md` | 관상 구현 계획 (13 Tasks) |
 | `docs/plans/2026-02-26-toss-ux-implementation.md` | 토스 UX 구현 계획 (6 Tasks) |
+| `docs/plans/2026-02-28-home-ux-redesign-design.md` | 홈 UX 리디자인 설계 (12 섹션) |
+| `docs/plans/2026-02-28-home-ux-implementation.md` | 홈 UX 구현 계획 (10 Tasks, 5 Phases) |
 | `CLAUDE.md` | 개발자룰·아키텍처·에셋·라우팅 규칙 |
 
 ---
