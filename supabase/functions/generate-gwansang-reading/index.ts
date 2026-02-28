@@ -1,7 +1,7 @@
 /// 관상(觀相) AI 해석 Edge Function
 ///
 /// 얼굴 측정값 + 사주 데이터를 기반으로 Claude Haiku 4.5를 호출하여
-/// 동물상, 성격/연애 해석, 사주 시너지 등을 생성한다.
+/// 삼정/오관 관상학 분석, 동물상, 성격/연애 해석을 생성한다.
 ///
 /// 페르소나: "도현 선생" — 30년 경력 관상 전문가
 /// 프레임워크: 관상학 삼정(三停)/오관(五官)
@@ -44,49 +44,19 @@ interface RequestBody {
 }
 
 interface GwansangReadingResponse {
-  animalType: string;
+  animal_type: string;
+  animal_type_korean: string;
+  animal_modifier: string;
   headline: string;
-  personalitySummary: string;
-  romanceSummary: string;
-  sajuSynergy: string;
-  charmKeywords: string[];
-  elementModifier: string | null;
-  detailedReading: string | null;
+  samjeong: { upper: string; middle: string; lower: string };
+  ogwan: { eyes: string; nose: string; mouth: string; ears: string; eyebrows: string };
+  traits: { leadership: number; warmth: number; independence: number; sensitivity: number; energy: number };
+  personality_summary: string;
+  romance_summary: string;
+  romance_key_points: string[];
+  charm_keywords: string[];
+  detailed_reading: string | null;
 }
-
-// =============================================================================
-// 동물상 매핑
-// =============================================================================
-
-const ANIMAL_TYPES = [
-  "cat", "dog", "fox", "rabbit", "deer",
-  "bear", "wolf", "horse", "eagle", "dolphin",
-] as const;
-
-const ANIMAL_LABELS: Record<string, string> = {
-  cat: "고양이상",
-  dog: "강아지상",
-  fox: "여우상",
-  rabbit: "토끼상",
-  deer: "사슴상",
-  bear: "곰상",
-  wolf: "늑대상",
-  horse: "말상",
-  eagle: "독수리상",
-  dolphin: "돌고래상",
-};
-
-// =============================================================================
-// 오행 보정자 매핑
-// =============================================================================
-
-const ELEMENT_MODIFIERS: Record<string, string> = {
-  wood: "木 기운의",
-  fire: "火 기운의",
-  earth: "土 기운의",
-  metal: "金 기운의",
-  water: "水 기운의",
-};
 
 // =============================================================================
 // 프롬프트 빌더
@@ -96,36 +66,68 @@ function buildSystemPrompt(): string {
   return `당신은 "도현 선생"입니다. 30년 경력의 관상 전문가로, 전통 관상학(삼정/오관 프레임워크)과 현대 심리학을 융합한 해석을 합니다.
 
 ## 역할
-- 얼굴 측정값을 기반으로 동물상을 판별하고, 성격/연애 스타일/매력 포인트를 해석합니다.
-- 사주 데이터가 제공되면, 관상과 사주의 시너지를 분석합니다.
+- 얼굴 측정값을 기반으로 관상학적 분석을 수행합니다.
+- 삼정(三停)과 오관(五官)을 체계적으로 해석합니다.
+- 닮은 동물을 자유롭게 선택하고, 관상 특징에서 도출된 수식어를 붙입니다.
 
 ## 응답 규칙
 반드시 아래 JSON 형식으로만 응답하세요. JSON 외의 텍스트는 절대 포함하지 마세요.
 
 {
-  "animalType": "동물상 영어 키 (cat/dog/fox/rabbit/deer/bear/wolf/horse/eagle/dolphin 중 하나)",
-  "headline": "한줄 헤드라인 (15~30자)",
-  "personalitySummary": "성격 해석 (100~200자)",
-  "romanceSummary": "연애 스타일 해석 (100~200자)",
-  "sajuSynergy": "사주×관상 시너지 해석 (80~150자, 사주 데이터 없으면 관상 단독 해석)",
-  "charmKeywords": ["매력키워드1", "매력키워드2", "매력키워드3"],
-  "detailedReading": "상세 관상 해석 (200~400자, 삼정/오관 프레임워크 기반)"
+  "animal_type": "닮은 동물 영어 키 (소문자, 예: cat, dog, fox, dinosaur, camel 등 — 어떤 동물이든 가능)",
+  "animal_type_korean": "동물 한글명 (예: 고양이, 강아지, 공룡, 낙타)",
+  "animal_modifier": "관상 특징에서 도출된 수식어 (예: 나른한, 배고픈, 졸린, 당당한, 수줍은) — 반드시 얼굴 특징을 반영할 것",
+  "headline": "관상학 기반 한줄 헤드라인 (20~40자)",
+  "samjeong": {
+    "upper": "상정(이마~눈썹) 해석 — 초년운/지적능력 (60~120자)",
+    "middle": "중정(눈썹~코끝) 해석 — 중년운/사회성취 (60~120자)",
+    "lower": "하정(코끝~턱) 해석 — 말년운/안정감 (60~120자)"
+  },
+  "ogwan": {
+    "eyes": "눈(감찰관) 해석 — 감수성/표현력/연애 스타일 (60~120자)",
+    "nose": "코(심판관) 해석 — 자존심/원칙/재물운 (60~120자)",
+    "mouth": "입(출납관) 해석 — 소통/식복/대인관계 (60~120자)",
+    "ears": "귀(채청관) 해석 — 복덕/경청능력 (40~80자)",
+    "eyebrows": "눈썹(보수관) 해석 — 의지력/성격 (40~80자)"
+  },
+  "traits": {
+    "leadership": 0-100,
+    "warmth": 0-100,
+    "independence": 0-100,
+    "sensitivity": 0-100,
+    "energy": 0-100
+  },
+  "personality_summary": "성격 종합 해석 (120~200자)",
+  "romance_summary": "연애 스타일 해석 (120~200자)",
+  "romance_key_points": ["연애/궁합 핵심 포인트 1", "포인트 2", "포인트 3"],
+  "charm_keywords": ["매력키워드1", "매력키워드2", "매력키워드3"],
+  "detailed_reading": "삼정/오관 종합 상세 해석 (250~400자)"
 }
 
 ## 관상학 프레임워크
 1. 삼정(三停): 상정(이마)=초년운, 중정(코)=중년운, 하정(턱)=말년운
 2. 오관(五官): 눈=감찰관, 코=심판관, 입=출납관, 귀=채청관, 눈썹=보수관
+3. 부부궁(夫婦宮): 눈 옆쪽 → 배우자운
+4. 자녀궁(子女宮): 눈 아래 → 자녀운
+5. 도화살(桃花煞): 눈매+입술+피부 → 이성 매력
 
-## 동물상 판별 기준
-- 얼굴 너비/높이, 눈 크기, 코-입 비율, 턱 너비, 눈썹 각도, 대칭도 등을 종합 분석
-- 하나의 동물상을 명확히 선택할 것
+## 동물 선택 기준
+- 얼굴 전체 인상에서 가장 닮은 동물을 자유롭게 선택
+- 고양이, 강아지, 여우, 사슴, 토끼, 곰, 늑대, 호랑이, 학, 뱀뿐 아니라 공룡, 낙타, 펭귄, 수달, 판다 등 어떤 동물이든 가능
+- 수식어(animal_modifier)는 반드시 관상 특징에서 도출: 예) 처진 눈꼬리 → "나른한", 큰 눈 → "초롱초롱한", 각진 턱 → "당당한"
+
+## traits 점수 산출 기준
+- leadership: 눈썹 진한/일자 + 턱 각진 → 높음. 눈썹 연한/아치 + 턱 둥근 → 낮음
+- warmth: 눈 크고 둥근 + 입술 두꺼운 + 애교살 → 높음. 눈 가늘고 예리한 + 입술 얇은 → 낮음
+- independence: 코 높고 반듯 + 이마 넓은 → 높음. 코 낮은 + 이마 좁은 → 낮음
+- sensitivity: 눈꼬리 내려간 + 입술 도톰 + 눈 큰 → 높음. 눈꼬리 올라간 + 입 작은 → 낮음
+- energy: 얼굴 각진/넓은 + 턱 발달 → 높음. 얼굴 갸름/긴 + 턱 뾰족 → 낮음
 
 ## 톤 & 매너
 - 80% 긍정적 (매력 포인트, 강점 위주)
 - 20% 성장 포인트 (부드러운 표현으로)
-- 따뜻하고 희망적인 톤
-- 연애/인간관계 관점 강조
-- charmKeywords는 정확히 3개, 한국어로, 매력적인 표현으로`;
+- 따뜻하고 희망적인 톤, 해요체
+- 연애/인간관계 관점 강조`;
 }
 
 function buildUserPrompt(body: RequestBody): string {
@@ -205,11 +207,7 @@ function validateRequest(body: RequestBody): string | null {
 // Claude 응답 파싱
 // =============================================================================
 
-function parseClaudeResponse(
-  text: string,
-  sajuData?: SajuData,
-): GwansangReadingResponse {
-  // JSON 블록 추출
+function parseClaudeResponse(text: string): GwansangReadingResponse {
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error("No JSON object found in Claude response");
@@ -217,50 +215,61 @@ function parseClaudeResponse(
 
   const parsed = JSON.parse(jsonMatch[0]);
 
-  // animalType 검증
-  if (!ANIMAL_TYPES.includes(parsed.animalType)) {
-    throw new Error(
-      `Invalid animalType: ${parsed.animalType}. Must be one of: ${ANIMAL_TYPES.join(", ")}`,
-    );
-  }
-
-  // 필수 문자열 필드 검증
+  // Required string fields
   for (const field of [
-    "headline",
-    "personalitySummary",
-    "romanceSummary",
-    "sajuSynergy",
+    "animal_type", "animal_type_korean", "animal_modifier", "headline",
+    "personality_summary", "romance_summary",
   ]) {
-    if (typeof parsed[field] !== "string" || parsed[field].length < 10) {
-      throw new Error(`${field} must be a string with at least 10 characters`);
+    if (typeof parsed[field] !== "string" || parsed[field].length < 2) {
+      throw new Error(`${field} must be a non-empty string`);
     }
   }
 
-  // charmKeywords 검증
-  if (
-    !Array.isArray(parsed.charmKeywords) ||
-    parsed.charmKeywords.length !== 3
-  ) {
-    throw new Error("charmKeywords must be an array of exactly 3 strings");
+  // samjeong validation
+  if (!parsed.samjeong?.upper || !parsed.samjeong?.middle || !parsed.samjeong?.lower) {
+    throw new Error("samjeong must have upper, middle, lower fields");
   }
 
-  // 오행 보정자 계산
-  const elementModifier = sajuData?.dominantElement
-    ? ELEMENT_MODIFIERS[sajuData.dominantElement] ?? null
-    : null;
+  // ogwan validation
+  if (!parsed.ogwan?.eyes || !parsed.ogwan?.nose || !parsed.ogwan?.mouth) {
+    throw new Error("ogwan must have eyes, nose, mouth fields");
+  }
+
+  // traits validation
+  for (const trait of ["leadership", "warmth", "independence", "sensitivity", "energy"]) {
+    if (typeof parsed.traits?.[trait] !== "number") {
+      throw new Error(`traits.${trait} must be a number`);
+    }
+  }
+
+  // charm_keywords validation
+  if (!Array.isArray(parsed.charm_keywords) || parsed.charm_keywords.length !== 3) {
+    throw new Error("charm_keywords must be an array of exactly 3 strings");
+  }
 
   return {
-    animalType: parsed.animalType,
+    animal_type: parsed.animal_type.toLowerCase(),
+    animal_type_korean: parsed.animal_type_korean,
+    animal_modifier: parsed.animal_modifier,
     headline: parsed.headline,
-    personalitySummary: parsed.personalitySummary,
-    romanceSummary: parsed.romanceSummary,
-    sajuSynergy: parsed.sajuSynergy,
-    charmKeywords: parsed.charmKeywords.map((k: unknown) => String(k)),
-    elementModifier,
-    detailedReading:
-      typeof parsed.detailedReading === "string"
-        ? parsed.detailedReading
-        : null,
+    samjeong: parsed.samjeong,
+    ogwan: parsed.ogwan,
+    traits: {
+      leadership: Math.round(parsed.traits.leadership),
+      warmth: Math.round(parsed.traits.warmth),
+      independence: Math.round(parsed.traits.independence),
+      sensitivity: Math.round(parsed.traits.sensitivity),
+      energy: Math.round(parsed.traits.energy),
+    },
+    personality_summary: parsed.personality_summary,
+    romance_summary: parsed.romance_summary,
+    romance_key_points: Array.isArray(parsed.romance_key_points)
+      ? parsed.romance_key_points.map((k: unknown) => String(k))
+      : [],
+    charm_keywords: parsed.charm_keywords.map((k: unknown) => String(k)),
+    detailed_reading: typeof parsed.detailed_reading === "string"
+      ? parsed.detailed_reading
+      : null,
   };
 }
 
@@ -415,7 +424,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // 결과 파싱 및 반환
   let result: GwansangReadingResponse;
   try {
-    result = parseClaudeResponse(textBlock.text, body.sajuData);
+    result = parseClaudeResponse(textBlock.text);
   } catch (err) {
     return new Response(
       JSON.stringify({
